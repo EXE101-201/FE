@@ -1,31 +1,48 @@
+import { useState, useEffect } from "react";
 import { Button, Dropdown, Layout, Menu, Typography, type MenuProps } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const { Header, Content } = Layout;
 const { Title, Paragraph } = Typography;
 
 const HomePage = () => {
 
-  const items: MenuProps['items'] = [
-    {
-      key: '1',
-      label: (
-        <Link to="/">Tài khoản</Link>
-      ),
-    },
-    {
-      key: '2',
-      label: (
-        <Link to="/login">Đăng nhập</Link> 
-      ),
-    },
-    {
-      key: '3',
-      label: (
-        <Link to="/register">Đăng ký</Link> 
-      ),
-    },
-  ];
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsLoggedIn(false);
+    navigate('/login');
+  };
+
+  const items: MenuProps['items'] = isLoggedIn
+    ? [
+      {
+        key: '1',
+        label: <Link to="/">Tài khoản</Link>,
+      },
+      {
+        key: '2',
+        label: <span onClick={handleLogout}>Đăng xuất</span>,
+      },
+    ]
+    : [
+      {
+        key: '1',
+        label: <Link to="/login">Đăng nhập</Link>,
+      },
+      {
+        key: '2',
+        label: <Link to="/register">Đăng ký</Link>,
+      },
+    ];
 
   return (
     <Layout
@@ -41,7 +58,7 @@ const HomePage = () => {
         className="flex justify-between items-center px-4! bg-transparent shadow-none"
         style={{ backdropFilter: "blur(8px)" }}
       >
-        <div className="text-white font-bold text-xl">MHW Platform</div>
+        <div className="text-white font-bold text-xl">Stu MTH</div>
         <Menu
           mode="horizontal"
           theme="dark"
@@ -52,7 +69,7 @@ const HomePage = () => {
             { key: "3", label: "Thử thách" },
             { key: "4", label: "Chatbot AI" },
             {
-              key: "5", label: <Dropdown menu={{ items }} overlayStyle={{backgroundColor:"#001529"}} placement="bottomLeft">
+              key: "5", label: <Dropdown menu={{ items }} overlayStyle={{ backgroundColor: "#001529" }} placement="bottomLeft">
                 <img src={"/background-homePage.png"} alt="logo" className="w-10 h-10 rounded-full" />
               </Dropdown>
             },
