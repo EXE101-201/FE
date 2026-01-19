@@ -12,12 +12,24 @@ import './App.css'
 import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ContentLibrary from './pages/ContentLibrary'
+import MusicPlayer from './pages/MusicPlayer'
+import PremiumUpgrade from './pages/PremiumUpgrade'
+import AccountPage from './pages/AccountPage'
+import ArticleDetail from './pages/ArticleDetail'
+
+import MainLayout from './components/MainLayout'
+
+// ...
 
 const router = createBrowserRouter([
   {
     path: '/',
+    element: <MainLayout />, // Wrap everything in MainLayout
     children: [
       { index: true, element: <Home /> },
+      { path: 'library', element: <ContentLibrary /> },
+      { path: 'library/play/:id', element: <MusicPlayer /> },
       { path: 'confessions', element: <Confessions /> },
       { path: 'confessions/new', element: <NewConfession /> },
       { path: 'confessions/:id', element: <ConfessionDetail /> },
@@ -26,11 +38,20 @@ const router = createBrowserRouter([
       { path: 'admin', element: <Admin /> },
       { path: 'about', element: <About /> },
       { path: 'contact', element: <Contact /> },
+      { path: 'articles/:id', element: <ArticleDetail /> },
+      { path: 'premium', element: <PremiumUpgrade /> },
+      { path: 'account', element: <AccountPage /> },
+    ],
+  },
+  {
+    // Auth pages outside of MainLayout (optional, but usually cleaner)
+    path: '/',
+    children: [
       { path: 'login', element: <LoginPage /> },
       { path: 'register', element: <RegisterPage /> },
       { path: 'forgot-password', element: <ForgotPasswordPage /> },
-    ],
-  },
+    ]
+  }
 ])
 
 export default function App() {
