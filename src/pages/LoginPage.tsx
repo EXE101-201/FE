@@ -4,21 +4,23 @@ import { Form, Input, Button, Typography, message } from "antd";
 import api from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
 import { SmileOutlined } from "@ant-design/icons";
+import { useUser } from "../lib/hooks";
 
 const { Title, Text } = Typography;
 
 export default function LoginPage() {
+  const { refreshUser } = useUser();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const onFinish = async (values: any) => {
-    // ... existing logic ...
     setLoading(true);
     try {
       const { data } = await api.post('/auth/login', values);
       message.success('Đăng nhập thành công!');
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user)); // Optional: save user info
+      refreshUser();
       navigate("/");
     } catch (error: any) {
       console.error("Login Error:", error);
@@ -37,6 +39,7 @@ export default function LoginPage() {
       message.success('Đăng nhập bằng Google thành công!');
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      refreshUser();
       navigate("/");
     } catch (error) {
       console.error("Google Login Error:", error);
