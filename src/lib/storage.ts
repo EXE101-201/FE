@@ -2,6 +2,7 @@ export type Confession = {
   id: string
   content: string
   createdAt: number
+  tags: string[]
   reactions: Record<string, number>
   comments: { id: string; content: string; createdAt: number }[]
   status: 'pending' | 'approved' | 'rejected'
@@ -32,12 +33,13 @@ export function getConfession(id: string): Confession | undefined {
   return listConfessions(true).find(c => c.id === id)
 }
 
-export function addConfession(content: string): Confession {
+export function addConfession(content: string, tags: string[] = []): Confession {
   const all = read<Confession[]>(CONFESSIONS_KEY, [])
   const newItem: Confession = {
     id: crypto.randomUUID(),
     content,
     createdAt: Date.now(),
+    tags,
     reactions: {},
     comments: [],
     status: 'pending',
@@ -96,6 +98,12 @@ export function tickHabit(id: string) {
     h.lastDone = today
     write(HABITS_KEY, items)
   }
+}
+
+export function deleteHabit(id: string) {
+  const items = listHabits()
+  const filtered = items.filter(x => x.id !== id)
+  write(HABITS_KEY, filtered)
 }
 
 

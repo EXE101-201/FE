@@ -17,6 +17,7 @@ import MusicPlayer from './pages/MusicPlayer'
 import PremiumUpgrade from './pages/PremiumUpgrade'
 import AccountPage from './pages/AccountPage'
 import ArticleDetail from './pages/ArticleDetail'
+import Onboarding from './pages/Onboarding'
 
 import MainLayout from './components/MainLayout'
 
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
     element: <MainLayout />, // Wrap everything in MainLayout
     children: [
       { index: true, element: <Home /> },
+      { path: 'onboarding', element: <Onboarding /> },
       { path: 'library', element: <ContentLibrary /> },
       { path: 'library/play/:id', element: <MusicPlayer /> },
       { path: 'confessions', element: <Confessions /> },
