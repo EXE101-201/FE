@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getConfessions } from './api';
+import api, { getConfessions } from './api';
 
 export type Confession = {
     id: string;
@@ -30,7 +30,24 @@ export function useUser() {
             }
         };
 
+        const syncUser = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const { data } = await api.get('/users/me');
+                    localStorage.setItem('user', JSON.stringify(data));
+                    setUser(data);
+                    window.dispatchEvent(new Event('user-updated'));
+                } catch (error) {
+                    console.error("Failed to sync user data", error);
+                }
+            }
+        };
+
+        // Initial fetch from local
         fetchUser();
+        // Sync with server
+        syncUser();
 
         // Listen for local storage changes (optional, but helpful if user logs out/in in another tab)
         const handleStorageChange = () => fetchUser();
