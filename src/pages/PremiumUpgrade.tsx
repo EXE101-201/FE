@@ -8,7 +8,7 @@ import { useUser } from '../lib/hooks';
 const { Title, Text, Paragraph } = Typography;
 
 const PremiumUpgrade: React.FC = () => {
-    const { message, modal } = App.useApp();
+    const { message } = App.useApp();
     const { user, refreshUser } = useUser();
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
