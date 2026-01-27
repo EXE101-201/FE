@@ -18,17 +18,51 @@ const PremiumUpgrade: React.FC = () => {
         console.log(user);
     }, [user]);
 
-    const handleUpgrade = (plan: string) => {
-        if (plan === 'basic' && isPremiumUser) {
-            modal.confirm({
-                title: 'Xác nhận chuyển về gói Cơ Bản',
-                content: 'Bạn có chắc chắn muốn quay lại gói Cơ bản? Mọi đặc quyền Premium sẽ bị tạm dừng.',
-                okText: 'Xác nhận',
-                cancelText: 'Hủy',
-                onOk: () => executeUpgrade(plan),
-            });
+    const handleUpgrade = async (plan: string) => {
+        if (plan === 'premium') {
+            try {
+                // Create order first
+                const res = await api.post('/transactions/create', { plan: 'premium' });
+                if (res.data && res.data.id) {
+                    navigate(`/payment?orderId=${res.data.id}`);
+                } else {
+                    message.error('Không thể tạo đơn hàng. Vui lòng thử lại.');
+                }
+            } catch (err) {
+                console.error(err);
+                message.error('Lỗi kết nối đến server.');
+            }
+            return;
+        } else if (plan === 'trial') {
+            activateTrial();
+            return;
         } else {
             executeUpgrade(plan);
+        }
+    };
+
+    const activateTrial = async () => {
+        setLoading(true);
+        try {
+            const { data } = await api.post('/users/activate-trial');
+
+            // Update user in localStorage
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const currentUser = JSON.parse(userStr);
+                currentUser.isPremium = true;
+                currentUser.premiumUntil = data.user.premiumUntil;
+                currentUser.hasUsedTrial = true;
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                refreshUser();
+            }
+            message.success(data.message);
+            navigate('/');
+        } catch (error: any) {
+            console.error('Trial activation error:', error);
+            message.error(error.response?.data?.message || 'Có lỗi xảy ra khi kích hoạt dùng thử');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -133,7 +167,7 @@ const PremiumUpgrade: React.FC = () => {
                                     <span>Phân tích cảm xúc</span>
                                 </li>
                             </ul>
-                            <Button disabled={!isPremiumUser} onClick={() => handleUpgrade('basic')} className="w-full h-12 rounded-xl text-lg mt-4">{isPremiumUser ? "Trở về bản cơ bản" : "Đang Sử Dụng"}</Button>
+                            <Button disabled className="w-full h-12 rounded-xl text-lg mt-4">{isPremiumUser ? "Đã bao gồm trong Premium" : "Đang Sử Dụng"}</Button>
                         </div>
                     </Card>
 
@@ -183,6 +217,33 @@ const PremiumUpgrade: React.FC = () => {
                             )}
                         </div>
                     </Card>
+
+                    {/* Free Trial Plan - Show only if not used */}
+                    {!user?.hasUsedTrial && (
+                        <div className="col-span-1 md:col-span-2">
+                            <Card className="rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50">
+                                <div className="flex flex-col md:flex-row items-center justify-between p-4 gap-6">
+                                    <div className="text-left">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <span className="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">Dùng thử miễn phí</span>
+                                            <Text strong className="text-indigo-800 text-xl">Trải nghiệm Premium 7 ngày</Text>
+                                        </div>
+                                        <Paragraph className="text-gray-600 mb-0 max-w-2xl">
+                                            Mở khóa toàn bộ tính năng cao cấp trong 7 ngày. Không cần thẻ tín dụng, hủy bất kỳ lúc nào.
+                                            Mỗi người chỉ được kích hoạt 1 lần duy nhất.
+                                        </Paragraph>
+                                    </div>
+                                    <Button
+                                        onClick={() => handleUpgrade('trial')}
+                                        loading={loading}
+                                        className="h-12 px-8 rounded-xl text-lg font-semibold bg-white text-indigo-600 border-2 border-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-md mt-4 md:mt-0 whitespace-nowrap"
+                                    >
+                                        Kích hoạt ngay
+                                    </Button>
+                                </div>
+                            </Card>
+                        </div>
+                    )}
                 </div>
 
                 <div className="bg-white rounded-3xl shadow-lg p-8 overflow-hidden">
