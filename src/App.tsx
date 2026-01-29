@@ -18,6 +18,7 @@ import PremiumUpgrade from './pages/PremiumUpgrade'
 import AccountPage from './pages/AccountPage'
 import ArticleDetail from './pages/ArticleDetail'
 import Onboarding from './pages/Onboarding'
+import PaymentPage from './pages/PaymentPage'
 
 import MainLayout from './components/MainLayout'
 
@@ -42,6 +43,7 @@ const router = createBrowserRouter([
       { path: 'contact', element: <Contact /> },
       { path: 'articles/:id', element: <ArticleDetail /> },
       { path: 'premium', element: <PremiumUpgrade /> },
+      { path: 'payment', element: <PaymentPage /> },
       { path: 'account', element: <AccountPage /> },
     ],
   },

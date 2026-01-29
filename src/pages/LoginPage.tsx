@@ -1,6 +1,6 @@
 import { GoogleLogin } from '@react-oauth/google';
 import { useState } from "react";
-import { Form, Input, Button, Typography, message } from "antd";
+import { Form, Input, Button, Typography, App } from "antd";
 import api from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
 import { SmileOutlined } from "@ant-design/icons";
@@ -10,6 +10,7 @@ const { Title, Text } = Typography;
 
 export default function LoginPage() {
   const { refreshUser } = useUser();
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 

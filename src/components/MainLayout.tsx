@@ -7,7 +7,7 @@ import { useUser } from "../lib/hooks";
 const { Header, Footer, Content } = Layout;
 
 export default function MainLayout() {
-    const { user, isLoggedIn, refreshUser } = useUser();
+    const { user, refreshUser } = useUser();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -17,7 +17,7 @@ export default function MainLayout() {
         console.log(123);
         navigate('/login');
     };
-    const items: MenuProps['items'] = isLoggedIn
+    const items: MenuProps['items'] = user
         ? [
             {
                 key: '1',
