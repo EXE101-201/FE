@@ -1,30 +1,39 @@
 import { useState, useEffect } from 'react';
 import api, { getConfessions } from './api';
 
-export type Confession = {
-    id: string;
-    content: string;
-    createdAt: number;
-    tags: string[];
-    reactions: Record<string, number>;
-    commentCount?: number;
-    comments?: { id: string; content: string; createdAt: number; user: { _id: string; fullName: string } }[];
-    status: 'pending' | 'approved' | 'rejected';
-    isPremium?: boolean;
-    author: string;
-    authorId?: string;
-};
+export interface Confession {
+    id: string
+    _id: string
+    content: string
+    tags: string[]
+    author: string | null
+    authorId: string | null
+    status: 'pending' | 'approved' | 'rejected'
+    reactions: Record<string, number>
+    myReaction?: string
+    isOwner?: boolean
+    isPremium: boolean
+    createdAt: number | string
+    commentCount?: number
+    comments?: any[]
+}
 
 export function useUser() {
     const userLocal = localStorage.getItem('user')
-    const [user, setUser] = useState<any>(userLocal ? JSON.parse(userLocal) : null);
+    const [user, setUser] = useState<any>(userLocal ? JSON.parse(userData()) : null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    function userData() {
+        return localStorage.getItem('user') || 'null';
+    }
 
     useEffect(() => {
         const fetchUser = () => {
-            const userData = localStorage.getItem('user');
+            const data = localStorage.getItem('user');
             const token = localStorage.getItem('token');
-            if (userData && token) {
-                setUser(JSON.parse(userData));
+            if (data && token) {
+                setUser(JSON.parse(data));
+                setIsLoggedIn(true);
             } else {
                 setUser(null);
             }
@@ -49,11 +58,8 @@ export function useUser() {
         // Sync with server
         syncUser();
 
-        // Listen for local storage changes (optional, but helpful if user logs out/in in another tab)
         const handleStorageChange = () => fetchUser();
         window.addEventListener('storage', handleStorageChange);
-
-        // Custom event for same-tab updates
         window.addEventListener('user-updated', handleStorageChange);
 
         return () => {
@@ -74,43 +80,30 @@ export function useConfessions() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchConfessions = async () => {
-            try {
-                const data = await getConfessions();
-                // Sort: Premium first, then by createdAt desc
-                const sorted = data.sort((a: Confession, b: Confession) => {
-                    if (a.isPremium && !b.isPremium) return -1;
-                    if (!a.isPremium && b.isPremium) return 1;
-                    return b.createdAt - a.createdAt;
-                });
-                setConfessions(sorted);
-            } catch (err: any) {
-                setError(err.message || 'Failed to fetch confessions');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchConfessions();
-    }, []);
-
     const refresh = async () => {
         setLoading(true);
         try {
             const data = await getConfessions();
+            // Sort: Premium first, then by createdAt desc
             const sorted = data.sort((a: Confession, b: Confession) => {
                 if (a.isPremium && !b.isPremium) return -1;
                 if (!a.isPremium && b.isPremium) return 1;
-                return b.createdAt - a.createdAt;
+                const dateA = new Date(a.createdAt).getTime();
+                const dateB = new Date(b.createdAt).getTime();
+                return dateB - dateA;
             });
             setConfessions(sorted);
+            setError(null);
         } catch (err: any) {
             setError(err.message || 'Failed to fetch confessions');
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        refresh();
+    }, []);
 
     return { confessions, loading, error, refresh };
 }

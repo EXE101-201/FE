@@ -79,6 +79,11 @@ export const deleteConfessionAPI = async (id: string) => {
     return response.data;
 };
 
+export const getConfessionTags = async () => {
+    const response = await api.get('/confessions/tags');
+    return response.data;
+};
+
 // Chatbot API functions
 export const startChat = async (topic?: string) => {
     const response = await api.post('/chatbot/start', { topic });
