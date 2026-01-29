@@ -5,6 +5,24 @@ import type { Confession } from '../lib/hooks'
 import { useUser } from '../lib/hooks'
 import { containsBadWords } from '../lib/badWords'
 
+function getRelativeTime(timestamp: any): string {
+  const date = new Date(timestamp)
+  const time = date.getTime()
+
+  if (isNaN(time)) return 'Không rõ thời gian'
+
+  const now = Date.now()
+  const diff = now - time
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days = Math.floor(diff / 86400000)
+
+  if (minutes < 1) return 'Vừa xong'
+  if (minutes < 60) return `${minutes} phút trước`
+  if (hours < 24) return `${hours} giờ trước`
+  return `${days} ngày trước`
+}
+
 export default function ConfessionDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -100,8 +118,11 @@ export default function ConfessionDetail() {
       </button>
       <article className="rounded border bg-white p-4 shadow-sm dark:bg-gray-900 dark:border-gray-800">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm text-gray-500 dark:text-gray-400">By {confession.author}</p>
-          {user && confession.authorId && user.id === confession.authorId && (
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400">By {confession.author}</p>
+            <span className="text-xs text-white bg-gray-700/50 px-2 py-0.5 rounded-full">{getRelativeTime(confession.createdAt)}</span>
+          </div>
+          {(confession.isOwner || (user && user.role === 'admin')) && (
             <button onClick={handleDelete} className="px-3 py-1 text-sm bg-red-600 dark:bg-red-600 text-white rounded hover:bg-red-700">
               Xóa
             </button>
@@ -115,30 +136,34 @@ export default function ConfessionDetail() {
             ))}
           </div>
         )}
-        <div className="mt-3 flex items-center gap-2 text-sm">
+        <div className="mt-4 flex items-center gap-4 text-sm border-t dark:border-gray-700 pt-4">
+          {/* Like Button */}
           <div className="relative group/react">
             <button
-              onClick={() => handleReact('❤️')}
-              className="px-2 py-1 rounded border hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 transition"
+              onClick={() => handleReact('like')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border shadow-sm transition-all ${confession.myReaction === 'like' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
             >
-              ❤️ {confession.reactions?.['❤️'] || 0}
+              <span className="text-xl">❤️</span>
+              <span className="font-bold text-base">{confession.reactions?.['like'] || 0}</span>
             </button>
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/react:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-10">
-              {confession.reactions?.['❤️'] || 0} người đã thả tim
-              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover/react:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-2xl z-20">
+              {confession.reactions?.['like'] || 0} người đã thích
+              <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-gray-900"></div>
             </div>
           </div>
 
+          {/* Dislike Button */}
           <div className="relative group/react">
             <button
-              onClick={() => handleReact('🤍')}
-              className="px-2 py-1 rounded border hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:bg-gray-700 transition"
+              onClick={() => handleReact('dislike')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border shadow-sm transition-all ${confession.myReaction === 'dislike' ? 'bg-gray-100 border-gray-300 text-gray-800' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
             >
-              🤍 {confession.reactions?.['🤍'] || 0}
+              <span className="text-xl">💔</span>
+              <span className="font-bold text-base">{confession.reactions?.['dislike'] || 0}</span>
             </button>
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover/react:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-10">
-              {confession.reactions?.['🤍'] || 0} người đã thích
-              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover/react:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-2xl z-20">
+              {confession.reactions?.['dislike'] || 0} người không thích
+              <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-gray-900"></div>
             </div>
           </div>
         </div>
