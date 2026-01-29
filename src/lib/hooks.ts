@@ -20,12 +20,8 @@ export interface Confession {
 
 export function useUser() {
     const userLocal = localStorage.getItem('user')
-    const [user, setUser] = useState<any>(userLocal ? JSON.parse(userData()) : null);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState<any>(userLocal ? JSON.parse(userLocal) : null);
 
-    function userData() {
-        return localStorage.getItem('user') || 'null';
-    }
 
     useEffect(() => {
         const fetchUser = () => {
@@ -33,7 +29,6 @@ export function useUser() {
             const token = localStorage.getItem('token');
             if (data && token) {
                 setUser(JSON.parse(data));
-                setIsLoggedIn(true);
             } else {
                 setUser(null);
             }
