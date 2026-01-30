@@ -3,7 +3,7 @@ import { Button, Card, Typography, Badge, App } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled, CrownFilled, RocketFilled, StarFilled, HeartFilled } from '@ant-design/icons';
 import api from '../lib/api';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../lib/hooks';
+import { useUser } from '../lib/hooks/hooks';
 
 const { Title, Text, Paragraph } = Typography;
 

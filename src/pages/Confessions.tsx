@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
-import { useConfessions } from '../lib/hooks'
+import { useConfessions } from '../lib/hooks/useConfession'
 import { reactToConfessionAPI } from '../lib/api'
 import { useState } from 'react'
-import type { Confession } from '../lib/hooks'
+import type { Confession } from '../lib/hooks/useConfession'
 
 function getRelativeTime(timestamp: any): string {
   const date = new Date(timestamp)

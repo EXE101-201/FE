@@ -4,7 +4,7 @@ import { Form, Input, Button, Typography, App } from "antd";
 import api from "../lib/api";
 import { Link, useNavigate } from "react-router-dom";
 import { SmileOutlined } from "@ant-design/icons";
-import { useUser } from "../lib/hooks";
+import { useUser } from "../lib/hooks/hooks";
 
 const { Title, Text } = Typography;
 

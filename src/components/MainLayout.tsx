@@ -2,7 +2,7 @@ import { Layout, Menu, Dropdown } from "antd";
 import { Link, useNavigate, Outlet } from "react-router-dom";
 import { HeartOutlined, FacebookOutlined, InstagramOutlined, YoutubeOutlined, CrownFilled } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { useUser } from "../lib/hooks";
+import { useUser } from "../lib/hooks/hooks";
 
 const { Header, Footer, Content } = Layout;
 
