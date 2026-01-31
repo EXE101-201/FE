@@ -40,7 +40,7 @@ const AccountPage: React.FC = () => {
     if (!user) return <div className="flex justify-center items-center min-h-screen">Đang tải...</div>;
 
     return (
-        <div className="min-h-screen bg-[#f0f2f5] py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-[#a8d5ba] py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
                 <Card className="rounded-3xl shadow-xl overflow-hidden border-none">
                     <div className="bg-gradient-to-r from-green-500 to-blue-500 h-32 relative">

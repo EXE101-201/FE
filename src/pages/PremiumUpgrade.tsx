@@ -126,7 +126,7 @@ const PremiumUpgrade: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-[#f0f2f5] py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-[#a8d5ba] py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-5xl mx-auto">
                 <div className="text-center mb-16">
                     <Badge count={<CrownFilled style={{ color: '#faad14', fontSize: '24px' }} />} offset={[10, 0]}>

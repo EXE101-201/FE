@@ -183,7 +183,7 @@ const AdminDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 bg-[#f0f2f5] min-h-screen">
+    <div className="p-6 bg-[#a8d5ba] min-h-screen">
       <div className="mb-8 flex justify-between items-center">
         <div>
           <Title level={2}>Hệ thống Quản trị</Title>
