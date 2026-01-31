@@ -1,11 +1,9 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import api, { startChat, sendChatMessage, getChatHistory, clearChatHistory } from '../lib/api';
-import { useUser } from '../lib/hooks/hooks';
 
 type Message = { id: string; role: 'user' | 'assistant'; content: string }
 
 export default function Chat() {
-  const { user } = useUser();
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)

@@ -1,6 +1,6 @@
 import { Layout, Menu, Dropdown } from "antd";
 import { Link, useNavigate, Outlet, useLocation } from "react-router-dom";
-import { HeartOutlined, FacebookOutlined, InstagramOutlined, YoutubeOutlined, CrownFilled } from "@ant-design/icons";
+import { FacebookOutlined, InstagramOutlined, YoutubeOutlined, CrownFilled } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useUser } from "../lib/hooks/hooks";
 
