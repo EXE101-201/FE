@@ -1,9 +1,11 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import api, { startChat, sendChatMessage, getChatHistory, clearChatHistory } from '../lib/api';
+import { useUser } from '../lib/hooks/hooks';
 
 type Message = { id: string; role: 'user' | 'assistant'; content: string }
 
 export default function Chat() {
+  const { user } = useUser();
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -19,7 +21,6 @@ export default function Chat() {
         // Try to load history
         try {
           const history = await getChatHistory();
-          // Check if history is an array
           if (Array.isArray(history) && history.length > 0) {
             const formattedMessages: Message[] = history.map((m: any) => ({
               id: m._id || crypto.randomUUID(),
@@ -48,12 +49,12 @@ export default function Chat() {
   }, [])
 
   const handleClearHistory = async () => {
+    if (!messages.length) return;
     if (!window.confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử trò chuyện?')) return;
     try {
       setIsLoading(true);
       await clearChatHistory();
       setMessages([]);
-      // Start fresh
       const data = await startChat();
       const aiMsg: Message = { id: crypto.randomUUID(), role: 'assistant', content: data.message };
       setMessages([aiMsg]);
@@ -66,7 +67,7 @@ export default function Chat() {
   };
 
   useEffect(() => {
-    listRef.current?.scrollTo({ top: listRef.current.scrollHeight })
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages])
 
   async function onSubmit(e: FormEvent) {
@@ -80,7 +81,6 @@ export default function Chat() {
 
     try {
       setIsLoading(true)
-      // Log AI Chat activity to server
       api.post('/users/log', { type: 'AI_CHAT' }).catch(err => console.error("Log activity error:", err));
 
       const data = await sendChatMessage(text)
@@ -95,89 +95,112 @@ export default function Chat() {
     }
   }
 
-  const suggestions = [
-    "Mình đang stress vì học",
-    "Mình mất động lực",
-    "Mình khó ngủ"
-  ]
-
   return (
-    <div className="flex flex-col h-[70dvh] border rounded bg-white dark:bg-gray-900 dark:border-white-500 relative">
-      <div className="absolute top-2 right-2 z-10">
-        <button
-          onClick={handleClearHistory}
-          className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-          title="Làm mới cuộc trò chuyện"
-          disabled={isLoading}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-600 dark:text-gray-300">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-          </svg>
-        </button>
-      </div>
-      <div ref={listRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.length === 0 && !isLoading && (
-          <p className="text-gray-500 dark:text-gray-300 text-sm">Hãy chia sẻ điều bạn đang trải qua. Mình sẽ lắng nghe.</p>
-        )}
-        {messages.map(m => (
-          <div key={m.id} className={m.role === 'user' ? 'text-right' : 'text-left'}>
-            <span className={
-              'inline-block px-3 py-2 rounded max-w-[80%] ' +
-              (m.role === 'user'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-black dark:bg-gray-800 dark:text-white')
-            }>
-              {m.content}
-            </span>
-          </div>
-        ))}
-        {isLoading && (
-          <div className="text-left">
-            <span className="inline-block px-3 py-2 rounded max-w-[80%] bg-gray-100 text-black dark:bg-gray-800 dark:text-white">
-              Đang trả lời...
-            </span>
-          </div>
-        )}
-        {error && (
-          <div className="text-center">
-            <span className="inline-block px-3 py-2 rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-              {error}
-            </span>
-          </div>
-        )}
-      </div>
-      {messages.filter(m => m.role === 'user').length === 0 && (
-        <div className="p-3 border-t">
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">Gợi ý nhanh:</p>
-          <div className="flex flex-wrap gap-2">
-            {suggestions.map(s => (
-              <button
-                key={s}
-                onClick={() => setInput(s)}
-                disabled={isLoading}
-                className="px-3 py-1 text-sm border rounded bg-white text-black dark:bg-gray-300 dark:text-white dark:border-white hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+    <div className="min-h-[calc(100vh-64px)] bg-[#d9ede2] flex items-center justify-center p-4 md:p-10 relative overflow-hidden">
+      {/* Background Decorations */}
+      <div className="absolute top-20 left-10 w-40 h-40 bg-[#a8d5ba] rounded-full blur-3xl opacity-30"></div>
+      <div className="absolute bottom-20 right-10 w-60 h-60 bg-[#58856c] rounded-full blur-3xl opacity-20"></div>
+
+      {/* Main Chat Container */}
+      <div className="w-full max-w-5xl h-[750px] bg-white/60 backdrop-blur-md rounded-[2.5rem] shadow-2xl flex flex-col relative z-10 border border-white/40 overflow-hidden">
+
+        {/* Header (Optional, for Clear history) */}
+        <div className="absolute top-4 right-6 z-20">
+          <button
+            onClick={handleClearHistory}
+            className="text-[#58856c] hover:text-[#3d5c4b] transition-colors p-2 rounded-full hover:bg-white/50"
+            title="Xóa lịch sử"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+          </button>
         </div>
-      )}
-      <form onSubmit={onSubmit} className="p-3 border-t flex gap-2">
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          disabled={isLoading}
-          className="flex-1 border rounded px-3 py-2 bg-white dark:bg-gray-300 dark:text-white disabled:opacity-50"
-          placeholder="Nhập tin nhắn..."
-        />
-        <button
-          disabled={isLoading}
-          className="px-3 py-2 rounded bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+
+        {/* Messages List Area */}
+        <div
+          ref={listRef}
+          className="flex-1 overflow-y-auto p-6 md:p-10 space-y-6 scrollbar-thin scrollbar-thumb-green-200"
         >
-          {isLoading ? 'Đang gửi...' : 'Gửi'}
-        </button>
-      </form>
+          {messages.map(m => (
+            <div
+              key={m.id}
+              className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} items-start gap-3`}
+            >
+              {m.role === 'assistant' && (
+                <div className="w-12 h-12 rounded-full bg-[#dcf3e8] flex items-center justify-center flex-shrink-0 border-2 border-white overflow-hidden">
+                  <img src="/robot1.png" alt="ai" className="w-full h-full object-cover" />
+                </div>
+              )}
+
+              <div className={`max-w-[75%] ${m.role === 'user' ? 'order-1' : 'order-2'}`}>
+                <div className={
+                  `px-5 py-3 rounded-2xl shadow-sm text-[15px] leading-relaxed ${m.role === 'user'
+                    ? 'bg-[#58856c] text-white rounded-tr-none'
+                    : 'bg-white text-gray-700 rounded-tl-none border border-gray-100'
+                  }`
+                }>
+                  {m.content}
+                </div>
+              </div>
+
+              {m.role === 'user' && (
+                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0 border-2 border-[#58856c] overflow-hidden order-2">
+                  <img src="/background-homePage.png" alt="user" className="w-full h-full object-cover" />
+                </div>
+              )}
+            </div>
+          ))}
+
+          {isLoading && (
+            <div className="flex justify-start items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#dcf3e8] flex items-center justify-center flex-shrink-0 border-2 border-white">
+                <div className="w-2 h-2 bg-[#58856c] rounded-full animate-bounce"></div>
+              </div>
+              <div className="bg-white px-5 py-3 rounded-2xl rounded-tl-none flex gap-1 items-center shadow-sm">
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse"></span>
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse delay-75"></span>
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse delay-150"></span>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="flex justify-center">
+              <span className="bg-red-50 text-red-500 px-4 py-2 rounded-full text-sm border border-red-100">
+                {error}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Decoration Robot */}
+        <div className="absolute right-10 bottom-24 hidden lg:block select-none pointer-events-none z-0">
+          <img src="/robot.png" alt="robot decorative" className="w-44 h-44 object-contain opacity-90 drop-shadow-xl" />
+        </div>
+
+        {/* Input Area */}
+        <div className="p-6 md:p-10 pt-0">
+          <form
+            onSubmit={onSubmit}
+            className="relative bg-white rounded-2xl shadow-lg flex items-center p-2 border border-gray-100 group focus-within:ring-2 ring-[#58856c]/20 transition-all"
+          >
+            <input
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              disabled={isLoading}
+              className="flex-1 bg-transparent px-4 py-3 outline-none text-gray-700 placeholder:text-gray-400"
+              placeholder="Nhập tin nhắn..."
+            />
+            <button
+              disabled={isLoading || !input.trim()}
+              className="bg-[#58856c] hover:bg-[#4a6e5a] text-white px-8 py-3 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed h-full flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
+            >
+              {isLoading ? '...' : 'Gửi'}
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
-  )
+  );
 }

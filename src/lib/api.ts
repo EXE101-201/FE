@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: '/api',
     headers: {
         'Content-Type': 'application/json',
     },
@@ -76,6 +76,11 @@ export const getConfessionDetail = async (id: string) => {
 
 export const deleteConfessionAPI = async (id: string) => {
     const response = await api.delete(`/confessions/${id}`);
+    return response.data;
+};
+
+export const getConfessionTags = async () => {
+    const response = await api.get('/confessions/tags');
     return response.data;
 };
 
