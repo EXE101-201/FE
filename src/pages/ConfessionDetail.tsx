@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { getConfessionDetail, addCommentAPI, reactToConfessionAPI, deleteConfessionAPI, deleteCommentAPI } from '../lib/api'
 import { useState, useEffect } from 'react'
-import type { Confession } from '../lib/hooks'
-import { useUser } from '../lib/hooks'
+import type { Confession } from '../lib/hooks/useConfession'
+import { useUser } from '../lib/hooks/hooks'
 import { containsBadWords } from '../lib/badWords'
 
 function getRelativeTime(timestamp: any): string {

@@ -1,14 +1,18 @@
 import { Layout, Menu, Dropdown } from "antd";
-import { Link, useNavigate, Outlet } from "react-router-dom";
-import { HeartOutlined, FacebookOutlined, InstagramOutlined, YoutubeOutlined, CrownFilled } from "@ant-design/icons";
+import { Link, useNavigate, Outlet, useLocation } from "react-router-dom";
+import { FacebookOutlined, InstagramOutlined, YoutubeOutlined, CrownFilled } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { useUser } from "../lib/hooks";
+import { useUser } from "../lib/hooks/hooks";
 
 const { Header, Footer, Content } = Layout;
 
 export default function MainLayout() {
     const { user, refreshUser } = useUser();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Determine the selected key based on the current path
+    const selectedKey = "/" + location.pathname.split("/")[1];
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -43,31 +47,31 @@ export default function MainLayout() {
             },
         ];
 
+    const menuItems = [
+        { key: "/confessions", label: <Link to="/confessions">Cộng đồng</Link> },
+        { key: "/habits", label: <Link to="/habits">Thử thách</Link> },
+        { key: "/chat", label: <Link to="/chat">Chatbot AI</Link> },
+        { key: "/library", label: <Link to="/library">Thư viện</Link> },
+        { key: "/premium", label: <Link to="/premium">Gói</Link> },
+    ];
+
+    if (user?.role === "ADMIN") {
+        menuItems.push({ key: "/admin", label: <Link to="/admin">Quản lý</Link> });
+    }
+
     return (
         <Layout className="min-h-screen! bg-[#f5f5f5]">
-            <Header className="sticky top-0 z-50 flex justify-between items-center px-4 md:px-8 bg-white shadow-sm border-b border-gray-100">
-                <Link to="/" className="flex items-center gap-2">
-                    <HeartOutlined className="text-2xl text-green-500" />
-                    <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-blue-500 bg-clip-text text-transparent">
-                        Stu.Mental Health
-                    </span>
-                </Link>
+            <Header className="sticky top-0 z-50 flex justify-between items-center px-4 md:px-8 bg-[#d9ede2]! shadow-sm border-b border-gray-100">
+                <img src="/logo.png" alt="logo" className=" h-3/4 cursor-pointer" onClick={() => navigate("/")} />
 
                 <div className="flex items-center gap-4 flex-1 justify-end">
                     <Menu
                         mode="horizontal"
-                        theme="dark"
+                        selectedKeys={[selectedKey]}
                         style={{
                             background: "transparent", border: "none", width: "fill-content", flex: "1"
                         }}
-                        items={[
-                            { key: "2", label: <Link to="/confessions" className="text-indigo-600 font-bold">Cộng đồng</Link> },
-                            { key: "3", label: <Link to="/habits" className="text-indigo-600 font-bold">Thử thách</Link> },
-                            { key: "4", label: <Link to="/chat" className="text-indigo-600 font-bold">Chatbot AI</Link> },
-                            { key: "5", label: <Link to="/library" className="text-indigo-600 font-bold">Thư viện</Link> },
-                            { key: "6", label: <Link to="/premium" className="text-indigo-600 font-bold">Gói</Link> },
-                            { key: "7", label: (user?.role === "ADMIN") ? (<Link to="/admin" className="text-indigo-600 font-bold">Quản lý</Link>) : null }
-                        ]}
+                        items={menuItems}
                     />
                     <Dropdown menu={{ items }} placement="bottomRight">
                         <div className="relative cursor-pointer">
@@ -84,7 +88,7 @@ export default function MainLayout() {
                 <Outlet />
             </Content>
 
-            <Footer className=" py-12 px-8">
+            <Footer className=" py-12 px-8 bg-[#d9ede2]!">
                 <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
                         <h3 className="text-lg font-bold mb-4 text-green-400">Stu.Mental Health</h3>

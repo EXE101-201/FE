@@ -18,7 +18,7 @@ import {
   EditOutlined
 } from '@ant-design/icons';
 import api from '../lib/api';
-import { useUser } from '../lib/hooks';
+import { useUser } from '../lib/hooks/hooks';
 import { useNavigate } from 'react-router-dom';
 
 const { Title, Text, Paragraph } = Typography;

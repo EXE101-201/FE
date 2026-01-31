@@ -34,3 +34,41 @@ body {
   letter-spacing: 1px;
   font-family: 'Google Sans', sans-serif;
 }
+
+/* Custom Menu Underline */
+.ant-menu-horizontal {
+  line-height: 46px !important;
+  border-bottom: none !important;
+}
+
+/* Link color for all menu items */
+.ant-menu-horizontal .ant-menu-item a {
+  color: #58856c !important;
+  opacity: 0.8;
+  transition: all 0.3s;
+}
+
+/* Styling for the selected item */
+.ant-menu-horizontal>.ant-menu-item-selected {
+  background: transparent !important;
+}
+
+.ant-menu-horizontal>.ant-menu-item-selected a {
+  font-weight: bold !important;
+  opacity: 1 !important;
+}
+
+.ant-menu-horizontal>.ant-menu-item-selected::after {
+  border-bottom: 2px solid #58856c !important;
+  opacity: 1 !important;
+}
+
+/* Disable underline for non-selected items on hover */
+.ant-menu-horizontal>.ant-menu-item:not(.ant-menu-item-selected)::after {
+  border-bottom: 2px solid transparent !important;
+}
+
+/* Text color on hover for better UX */
+.ant-menu-horizontal>.ant-menu-item:hover a {
+  opacity: 1 !important;
+}

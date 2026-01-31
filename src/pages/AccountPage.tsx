@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Card, Typography, message, Divider, Avatar } from 'antd';
 import { UserOutlined, MailOutlined, IdcardOutlined, CrownFilled, SafetyCertificateOutlined } from '@ant-design/icons';
 import api from '../lib/api';
-import { useUser } from '../lib/hooks';
+import { useUser } from '../lib/hooks/hooks';
 
 const { Title, Text, Paragraph } = Typography;
 

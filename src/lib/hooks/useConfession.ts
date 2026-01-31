@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import api, { getConfessions } from './api';
+import { useEffect, useState } from "react";
+import { getConfessions } from "../api";
+
 
 export interface Confession {
     id: string
@@ -17,72 +18,6 @@ export interface Confession {
     commentCount?: number
     comments?: any[]
 }
-
-export function useUser() {
-    const [user, setUser] = useState<any>(() => {
-        const local = localStorage.getItem('user');
-        if (!local) return null;
-        try {
-            return JSON.parse(local);
-        } catch (e) {
-            console.error("Failed to parse user from localStorage", e);
-            return null;
-        }
-    });
-
-    const isLoggedIn = !!user;
-
-    useEffect(() => {
-        const fetchUser = () => {
-            const data = localStorage.getItem('user');
-            const token = localStorage.getItem('token');
-            if (data && token) {
-                try {
-                    setUser(JSON.parse(data));
-                } catch (e) {
-                    setUser(null);
-                }
-            } else {
-                setUser(null);
-            }
-        };
-
-        const syncUser = async () => {
-            const token = localStorage.getItem('token');
-            if (token) {
-                try {
-                    const { data } = await api.get('/users/me');
-                    localStorage.setItem('user', JSON.stringify(data));
-                    setUser(data);
-                    window.dispatchEvent(new Event('user-updated'));
-                } catch (error) {
-                    console.error("Failed to sync user data", error);
-                }
-            }
-        };
-
-        // Initial fetch from local
-        fetchUser();
-        // Sync with server
-        syncUser();
-
-        const handleStorageChange = () => fetchUser();
-        window.addEventListener('storage', handleStorageChange);
-        window.addEventListener('user-updated', handleStorageChange);
-
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-            window.removeEventListener('user-updated', handleStorageChange);
-        };
-    }, []);
-
-    const refreshUser = () => {
-        window.dispatchEvent(new Event('user-updated'));
-    };
-
-    return { user, isLoggedIn, refreshUser };
-}
-
 export function useConfessions() {
     const [confessions, setConfessions] = useState<Confession[]>([]);
     const [loading, setLoading] = useState(true);

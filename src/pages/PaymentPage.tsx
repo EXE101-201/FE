@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { Card, Typography, Descriptions } from 'antd';
-import { useUser } from '../lib/hooks';
+import { useUser } from '../lib/hooks/hooks';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 

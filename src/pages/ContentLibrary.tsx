@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Tabs, Card, List, Badge, Button, Modal, Layout, Typography } from "antd";
 import { LockOutlined, PlayCircleOutlined, ReadOutlined, SoundOutlined, HeartOutlined } from "@ant-design/icons";
 import api from "../lib/api";
-import { useUser } from "../lib/hooks";
+import { useUser } from "../lib/hooks/hooks";
 import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
