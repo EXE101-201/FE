@@ -33,8 +33,6 @@ export default function GlobalRobot() {
         return () => clearInterval(interval);
     }, [location.pathname]);
 
-    // Hide on chat page
-    if (location.pathname === '/chat') return null;
 
     const onMouseDown = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -80,6 +78,8 @@ export default function GlobalRobot() {
             navigate('/chat');
         }
     };
+
+    if (location.pathname === '/chat') return null;
 
     return (
         <div

@@ -7,15 +7,12 @@ import type { Confession } from '../lib/hooks/useConfession'
 function getRelativeTime(timestamp: any): string {
   const date = new Date(timestamp)
   const time = date.getTime()
-
   if (isNaN(time)) return 'Không rõ thời gian'
-
   const now = Date.now()
   const diff = now - time
   const minutes = Math.floor(diff / 60000)
   const hours = Math.floor(diff / 3600000)
   const days = Math.floor(diff / 86400000)
-
   if (minutes < 1) return 'Vừa xong'
   if (minutes < 60) return `${minutes} phút trước`
   if (hours < 24) return `${hours} giờ trước`
@@ -55,9 +52,6 @@ export default function Confessions() {
     }
   }
 
-  if (loading) return <p className="text-center py-10">Loading...</p>
-  if (error) return <p className="text-center py-10 text-red-500">Error: {error}</p>
-
   return (
     <div className="min-h-screen bg-[#f3f7f5]">
       {/* New Header Section */}
@@ -80,7 +74,6 @@ export default function Confessions() {
       <div className="max-w-[1400px] mx-auto px-4 py-8">
         {/* Simplified Search Bar */}
         <div className="bg-[#e9eff6] rounded-[2rem] p-2 flex flex-wrap items-center gap-4 mb-8 shadow-inner overflow-x-auto whitespace-nowrap">
-          {/* Search Input - Stays Right-aligned or Centered? Mockup shows it on the right side of the bar usually */}
           <div className="relative group min-w-[300px] flex-1">
             <input
               type="text"
@@ -138,54 +131,69 @@ export default function Confessions() {
 
           {/* Middle Column: Posts */}
           <main className="flex-1 flex flex-col gap-6 w-full lg:min-w-0">
-            <div className="grid gap-6">
-              {visible.length === 0 && (
-                <div className="bg-white dark:bg-gray-800 p-8 rounded-xl border border-dashed dark:border-gray-700 text-center">
-                  <p className="text-gray-500 dark:text-gray-400">Chưa có bài nào trong chủ đề này. Hãy là người đầu tiên!</p>
+            {loading ? (
+              <div className="bg-white/60 backdrop-blur-md p-12 rounded-[2.5rem] shadow-sm border border-white/60 text-center animate-pulse">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></span>
                 </div>
-              )}
-              {visible.map((c: Confession) => (
-                <article key={c.id} className={`group rounded-2xl border bg-white p-6 shadow-sm hover:shadow-md transition-all dark:bg-gray-800 dark:border-gray-700 ${c.isPremium ? 'border-yellow-400 ring-1 ring-yellow-400/20' : 'border-gray-100'}`}>
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${c.isPremium ? 'bg-yellow-100 text-yellow-600' : 'bg-[#e8f5e9] text-[#58856c]'}`}>
-                        {c.author ? c.author[0].toUpperCase() : 'A'}
+                <p className="text-[#58856c] font-bold text-lg">Đang tải những tâm tình...</p>
+              </div>
+            ) : error ? (
+              <div className="bg-red-50/80 backdrop-blur-md p-8 rounded-3xl border border-red-100 text-center shadow-sm">
+                <p className="text-red-500 font-bold mb-2">Đã có lỗi xảy ra!</p>
+                <p className="text-red-400 text-sm">{error}</p>
+                <button onClick={() => refresh()} className="mt-4 px-6 py-2 bg-red-100 text-red-600 rounded-full font-bold hover:bg-red-200 transition-colors">Thử lại</button>
+              </div>
+            ) : (
+              <div className="grid gap-6">
+                {visible.length === 0 && (
+                  <div className="bg-white/60 backdrop-blur-md p-12 rounded-[2.5rem] border border-dashed border-gray-300 text-center shadow-sm">
+                    <p className="text-gray-500 font-medium">Chưa có bài nào trong chủ đề này. Hãy là người đầu tiên!</p>
+                  </div>
+                )}
+                {visible.map((c: Confession) => (
+                  <article key={c.id} className={`group rounded-2xl border bg-white p-6 shadow-sm hover:shadow-md transition-all dark:bg-gray-800 dark:border-gray-700 ${c.isPremium ? 'border-yellow-400 ring-1 ring-yellow-400/20' : 'border-gray-100'}`}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${c.isPremium ? 'bg-yellow-100 text-yellow-600' : 'bg-[#e8f5e9] text-[#58856c]'}`}>
+                          {c.author ? c.author[0].toUpperCase() : 'A'}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-gray-900 dark:text-white text-lg">{c.author || 'Người ẩn danh'}</h3>
+                          <p className="text-xs text-white bg-[#58856c]/50 px-3 py-0.5 rounded-full inline-block backdrop-blur-sm">{getRelativeTime(c.createdAt)}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white text-lg">{c.author || 'Người ẩn danh'}</h3>
-                        <p className="text-xs text-white bg-[#58856c]/50 px-3 py-0.5 rounded-full inline-block backdrop-blur-sm">{getRelativeTime(c.createdAt)}</p>
+                      {c.isPremium && (
+                        <span className="px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-[10px] uppercase font-black rounded-full shadow-sm">Premium</span>
+                      )}
+                    </div>
+
+                    <Link to={`/confessions/${c.id}`} className="block">
+                      <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed mb-4 text-[16px]">
+                        {truncateContent(c.content, 500)}
+                      </p>
+                    </Link>
+
+                    <div className="flex items-center justify-between border-t border-gray-50 dark:border-gray-700 pt-4 mt-2">
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => handleReact(c.id, 'like')} className={`flex items-center gap-1.5 px-4 py-2 rounded-full transition-all ${c.myReaction === 'like' ? 'bg-red-50 text-red-600' : 'bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-500'}`}>
+                          <span className="text-lg">❤️</span>
+                          <span className="font-bold">{c.reactions?.['like'] || 0}</span>
+                        </button>
+                        <button onClick={() => handleReact(c.id, 'dislike')} className={`flex items-center gap-1.5 px-4 py-2 rounded-full transition-all ${c.myReaction === 'dislike' ? 'bg-gray-100 text-gray-800' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}>
+                          <span className="text-lg">💔</span>
+                          <span className="font-bold">{c.reactions?.['dislike'] || 0}</span>
+                        </button>
+                        <Link to={`/confessions/${c.id}`} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-[#58856c] transition-all font-bold">
+                          <span className="text-lg">💬</span>
+                          {c.commentCount || 0}
+                        </Link>
                       </div>
                     </div>
-                    {c.isPremium && (
-                      <span className="px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-[10px] uppercase font-black rounded-full shadow-sm">Premium</span>
-                    )}
-                  </div>
-
-                  <Link to={`/confessions/${c.id}`} className="block">
-                    <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed mb-4 text-[16px]">
-                      {truncateContent(c.content, 500)}
-                    </p>
-                  </Link>
-
-                  <div className="flex items-center justify-between border-t border-gray-50 dark:border-gray-700 pt-4 mt-2">
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => handleReact(c.id, 'like')} className={`flex items-center gap-1.5 px-4 py-2 rounded-full transition-all ${c.myReaction === 'like' ? 'bg-red-50 text-red-600' : 'bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-500'}`}>
-                        <span className="text-lg">❤️</span>
-                        <span className="font-bold">{c.reactions?.['like'] || 0}</span>
-                      </button>
-                      <button onClick={() => handleReact(c.id, 'dislike')} className={`flex items-center gap-1.5 px-4 py-2 rounded-full transition-all ${c.myReaction === 'dislike' ? 'bg-gray-100 text-gray-800' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}>
-                        <span className="text-lg">💔</span>
-                        <span className="font-bold">{c.reactions?.['dislike'] || 0}</span>
-                      </button>
-                      <Link to={`/confessions/${c.id}`} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-[#58856c] transition-all font-bold">
-                        <span className="text-lg">💬</span>
-                        {c.commentCount || 0}
-                      </Link>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </main>
 
           {/* Right Column: Tâm điểm */}
