@@ -3,6 +3,7 @@ import { Link, useNavigate, Outlet, useLocation } from "react-router-dom";
 import { FacebookOutlined, InstagramOutlined, YoutubeOutlined, CrownFilled } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useUser } from "../lib/hooks/hooks";
+import GlobalRobot from "./GlobalRobot";
 
 const { Header, Footer, Content } = Layout;
 
@@ -129,6 +130,7 @@ export default function MainLayout() {
                     © 2024 Stu.Mental Health. All rights reserved.
                 </div>
             </Footer>
+            <GlobalRobot />
         </Layout>
     );
 }
