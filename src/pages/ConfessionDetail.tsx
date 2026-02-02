@@ -181,7 +181,7 @@ export default function ConfessionDetail() {
                   <p className="dark:text-white">{cm.content}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(cm.createdAt).toLocaleString()}</p>
                 </div>
-                {user && (user.id === cm.user._id || user.id === confession.authorId) && (
+                {user && (user.id === cm.user._id || user._id === cm.user._id || user.id === confession.authorId || user._id === confession.authorId) && (
                   <button
                     onClick={() => handleDeleteComment(confession.id, cm.id || (cm as any)._id)}
                     className="text-xs text-red-500 dark:text-white dark:bg-red-600 px-2 py-1 hover:bg-red-50 dark:hover:bg-red-700 rounded transition"
