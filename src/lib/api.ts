@@ -105,5 +105,21 @@ export const clearChatHistory = async () => {
     return response.data;
 };
 
+// Challenge API functions
+export const getChallenges = async () => {
+    const response = await api.get('/challenges');
+    return response.data;
+};
+
+export const joinChallenge = async (challengeId: string) => {
+    const response = await api.post('/challenges/join', { challengeId });
+    return response.data;
+};
+
+export const updateChallengeProgress = async (challengeId: string) => {
+    const response = await api.put(`/challenges/${challengeId}/progress`);
+    return response.data;
+};
+
 
 export default api;
