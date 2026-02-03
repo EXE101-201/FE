@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
-import api, { startChat, sendChatMessage, getChatHistory, clearChatHistory } from '../lib/api';
+import api, { startChat, sendChatMessage, getChatHistory, clearChatHistory, getChallenges, updateChallengeProgress } from '../lib/api';
+import { message as antdMessage } from 'antd';
 import ExpressiveRobot, { type RobotExpression } from '../components/ExpressiveRobot';
 
 type Message = { id: string; role: 'user' | 'assistant'; content: string; expression?: RobotExpression }
@@ -15,6 +16,7 @@ export default function Chat() {
   const dragRef = useRef({ startX: 0, startY: 0, initialX: 0, initialY: 0 });
   const containerRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const timerRef = useRef<any>(null)
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -94,6 +96,35 @@ export default function Chat() {
       }
     }
     initializeChat()
+
+    // Timer for Dr. MTH challenge (10 minutes)
+    const startTimer = async () => {
+      try {
+        const challenges = await getChallenges();
+        const drMTHChallenge = challenges.find((c: any) => c.title.includes("Dr. MTH"));
+
+        if (drMTHChallenge && drMTHChallenge.userProgress && drMTHChallenge.userProgress.status !== 'COMPLETED') {
+          console.log("Dr. MTH Challenge found, starting 10m timer...");
+
+          timerRef.current = setTimeout(async () => {
+            try {
+              await updateChallengeProgress(drMTHChallenge._id);
+              antdMessage.success('Chúc mừng! Bạn đã hoàn thành 10 phút tâm sự và cập nhật thử thách!');
+            } catch (err) {
+              console.error("Auto-update progress failed", err);
+            }
+          }, 10 * 60 * 1000); // 10 minutes
+        }
+      } catch (err) {
+        console.error("Failed to check challenges for timer", err);
+      }
+    };
+
+    startTimer();
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    }
   }, [])
 
   const handleClearHistory = async () => {
