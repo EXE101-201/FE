@@ -94,7 +94,7 @@ const Challenges: React.FC = () => {
                             <Input
                                 placeholder="tìm kiếm"
                                 value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                                 className="rounded-full bg-[#d0e5d8] border-none px-6 py-2 w-64 md:w-96 text-gray-500"
                                 style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)', textAlign: 'right' }}
                             />

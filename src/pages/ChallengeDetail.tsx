@@ -17,11 +17,25 @@ const ChallengeDetail: React.FC = () => {
             setChallenge(response.data);
         } catch (error) {
             console.error('Failed to fetch challenge detail:', error);
-            // Fallback: try to find it in the list of all challenges
+            // Fallback: try to find it in the list of all challenges or mock data
             try {
                 const response = await api.get('/challenges');
-                const found = response.data.find((c: any) => c._id === id);
+                let data = response.data;
+                if (!data || data.length === 0) {
+                    data = [
+                        { _id: '1', title: "Ngủ sớm 7 ngày", description: "Nên ngủ trước 11h", duration: 7, icon: "/Thuthach.png", participants: 5, completedCount: 5, userProgress: { progress: 2, status: 'JOINED' } },
+                        { _id: '2', title: "Ngồi thiền 10p", description: "Hãy tập trung nhé!!", duration: 7, icon: "/Thuthach2.png", participants: 9, completedCount: 3, userProgress: null },
+                        { _id: '3', title: "Uống 2lít nước mỗi ngày", description: "nước rất quan trọng cho cơ thể!", duration: 7, icon: "/Thuthach3.png", participants: 15, completedCount: 2, userProgress: { progress: 5, status: 'JOINED' } },
+                        { _id: '4', title: "Tập thể dục 15p", description: "Cùng vươn vai nào", duration: 7, icon: "/Thuthach4.png", participants: 5, completedCount: 5, userProgress: { progress: 2, status: 'JOINED' } },
+                        { _id: '5', title: "Không dùng điện thoại 15 phút trước khi ngủ", description: "Ngủ dễ hơn cực nhiều.", duration: 7, icon: "/Thuthach5.png", participants: 12, completedCount: 4, userProgress: { progress: 2, status: 'JOINED' } },
+                        { _id: '6', title: "Tâm sự cùng Dr. MTH", description: "Có áp lực hãy nói với tôi!", duration: 7, icon: "/Thuthach9.png", participants: 20, completedCount: 10, userProgress: { progress: 2, status: 'JOINED' } },
+                        { _id: '7', title: "Viết lại 1 ngày của bạn thế nào?", description: "Cùng chia sẻ nào !", duration: 7, icon: "/Thuthach7.png", participants: 8, completedCount: 2, userProgress: { progress: 5, status: 'JOINED' } },
+                        { _id: '8', title: "Thư giãn cùng âm nhạc", description: "Thư giãn chút nào !", duration: 7, icon: "/Thuthach8.png", participants: 18, completedCount: 6, userProgress: { progress: 2, status: 'JOINED' } }
+                    ];
+                }
+                const found = data.find((c: any) => c._id === id);
                 if (found) setChallenge(found);
+                else message.error('Không tìm thấy thử thách');
             } catch (err) {
                 message.error('Không tìm thấy thử thách');
             }

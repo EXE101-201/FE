@@ -17,7 +17,6 @@ export default function Chat() {
   const containerRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<any>(null)
-  const [challengeUpdated, setChallengeUpdated] = useState(false)
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -111,7 +110,6 @@ export default function Chat() {
             try {
               await updateChallengeProgress(drMTHChallenge._id);
               antdMessage.success('Chúc mừng! Bạn đã hoàn thành 10 phút tâm sự và cập nhật thử thách!');
-              setChallengeUpdated(true);
             } catch (err) {
               console.error("Auto-update progress failed", err);
             }
