@@ -50,7 +50,7 @@ export default function MainLayout() {
 
     const menuItems = [
         { key: "/confessions", label: <Link to="/confessions">Cộng đồng</Link> },
-        { key: "/habits", label: <Link to="/habits">Thử thách</Link> },
+        { key: "/challenge-list", label: <Link to="/challenge-list">Thử thách</Link> },
         { key: "/chat", label: <Link to="/chat">Chatbot AI</Link> },
         { key: "/library", label: <Link to="/library">Thư viện</Link> },
         { key: "/premium", label: <Link to="/premium">Gói</Link> },

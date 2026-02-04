@@ -19,6 +19,7 @@ import AccountPage from './pages/AccountPage'
 import ArticleDetail from './pages/ArticleDetail'
 import Onboarding from './pages/Onboarding'
 import PaymentPage from './pages/PaymentPage'
+import ChallengeDetail from './pages/ChallengeDetail'
 
 import MainLayout from './components/MainLayout'
 
@@ -37,7 +38,7 @@ const router = createBrowserRouter([
       { path: 'confessions/new', element: <NewConfession /> },
       { path: 'confessions/:id', element: <ConfessionDetail /> },
       { path: 'chat', element: <Chat /> },
-      { path: 'habits', element: <Habits /> },
+      { path: 'challenge-list', element: <Habits /> },
       { path: 'admin', element: <Admin /> },
       { path: 'about', element: <About /> },
       { path: 'contact', element: <Contact /> },
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
       { path: 'premium', element: <PremiumUpgrade /> },
       { path: 'payment', element: <PaymentPage /> },
       { path: 'account', element: <AccountPage /> },
+      { path: 'challenge', element: <ChallengeDetail /> },
     ],
   },
   {

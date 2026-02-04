@@ -318,10 +318,7 @@ export default function Chat() {
         }}
         onMouseDown={onRobotMouseDown}
       >
-        <ExpressiveRobot expression={expression} size={240} className={`${isDragging ? 'drop-shadow-3xl scale-105' : 'drop-shadow-2xl'} transition-all`} />
-        <div className="mt-2 px-4 py-1.5 bg-white/60 backdrop-blur-md rounded-full text-[12px] font-bold text-[#58856c] border border-white/40 uppercase tracking-widest shadow-lg">
-          Đang {expression === 'thinking' ? 'suy nghĩ' : (expression === 'happy' ? 'vui vẻ' : (expression === 'empathetic' ? 'lắng nghe' : (expression === 'sad' ? 'chia sẻ cùng bạn' : 'online')))}
-        </div>
+        <img src="/robot.png" alt="robot" className="w-20 h-20 md:w-28 md:h-28 object-contain mt-2" />
       </div>
     </div>
   );
