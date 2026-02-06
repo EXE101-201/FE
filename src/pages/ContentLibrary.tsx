@@ -3,7 +3,7 @@ import { Badge, Button, Card, List, Modal, Spin } from "antd";
 import { LockOutlined, PlayCircleOutlined, ReadOutlined, SoundOutlined, HeartOutlined, StarOutlined } from "@ant-design/icons";
 import api from "../lib/api";
 import { useUser } from "../lib/hooks/hooks";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 
 export default function ContentLibrary() {
@@ -13,9 +13,11 @@ export default function ContentLibrary() {
     const [music, setMusic] = useState<any[]>([]);
     const [meditation, setMeditation] = useState<any[]>([]);
     const [otherContent, setOtherContent] = useState<any[]>([]);
-    const [activeTab, setActiveTab] = useState('articles');
-    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const location = useLocation();
+    const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'articles');
+    const [loading, setLoading] = useState(true);
+    const challengeId = location.state?.challengeId;
 
     const isPremiumUser = user?.isPremium && new Date(user.premiumUntil).getTime() > new Date().getTime();
 
@@ -44,7 +46,7 @@ export default function ContentLibrary() {
             if (item.type === 'ARTICLE') {
                 navigate(`/articles/${item.idArticle || item._id}`);
             } else {
-                navigate(`/library/play/${item._id}`);
+                navigate(`/library/play/${item._id}`, { state: { challengeId } });
             }
         }
     };

@@ -1,5 +1,7 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
-import api, { startChat, sendChatMessage, getChatHistory, clearChatHistory } from '../lib/api';
+import { useLocation } from 'react-router-dom';
+import api, { startChat, sendChatMessage, getChatHistory, clearChatHistory, joinChallenge, updateChallengeProgress } from '../lib/api';
+import { message as antdMessage } from 'antd';
 import ExpressiveRobot, { type RobotExpression } from '../components/ExpressiveRobot';
 
 type Message = { id: string; role: 'user' | 'assistant'; content: string; expression?: RobotExpression }
@@ -54,6 +56,13 @@ export default function Chat() {
       initialY: robotPos.y
     };
   };
+  const checkChallenge = async () => {
+    const response = await api.get(`/challenges/${challengeId}`);
+    const data = response.data;
+    if (!data.userProgress) {
+      await joinChallenge(challengeId);
+    }
+  }
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -94,6 +103,10 @@ export default function Chat() {
       }
     }
     initializeChat()
+    if (challengeId) {
+      checkChallenge();
+    }
+
   }, [])
 
   const handleClearHistory = async () => {
@@ -116,6 +129,10 @@ export default function Chat() {
       setIsLoading(false);
     }
   };
+
+  const location = useLocation();
+  const challengeId = location.state?.challengeId;
+  const [hasUpdatedChallenge, setHasUpdatedChallenge] = useState(false);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
@@ -144,6 +161,20 @@ export default function Chat() {
       }
       setMessages(m => [...m, reply])
       setExpression(data.expression as RobotExpression || 'happy')
+
+      // Update challenge if coming from a challenge
+      if (challengeId && !hasUpdatedChallenge) {
+        try {
+          await updateChallengeProgress(challengeId);
+          setHasUpdatedChallenge(true);
+          antdMessage.success('Chúc mừng! Bạn đã hoàn thành nhiệm vụ tâm sự hôm nay! 🎉');
+        } catch (err: any) {
+          // If already updated today, just mark as updated in local state to stop trying
+          if (err.response?.status === 400) {
+            setHasUpdatedChallenge(true);
+          }
+        }
+      }
     } catch (err: any) {
       console.error('Error sending message:', err)
       const msg = err.response?.data?.message || 'Không thể gửi tin nhắn. Vui lòng thử lại.'

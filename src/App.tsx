@@ -3,7 +3,8 @@ import Confessions from './pages/Confessions'
 import NewConfession from './pages/NewConfession'
 import ConfessionDetail from './pages/ConfessionDetail'
 import Chat from './pages/Chat'
-import Habits from './pages/Habits'
+import Challenges from './pages/Challenges'
+import ChallengeDetail from './pages/ChallengeDetail'
 import Admin from './pages/Admin'
 import Home from './pages/Home'
 import About from './pages/About'
@@ -19,7 +20,6 @@ import AccountPage from './pages/AccountPage'
 import ArticleDetail from './pages/ArticleDetail'
 import Onboarding from './pages/Onboarding'
 import PaymentPage from './pages/PaymentPage'
-import ChallengeDetail from './pages/ChallengeDetail'
 
 import MainLayout from './components/MainLayout'
 
@@ -38,7 +38,8 @@ const router = createBrowserRouter([
       { path: 'confessions/new', element: <NewConfession /> },
       { path: 'confessions/:id', element: <ConfessionDetail /> },
       { path: 'chat', element: <Chat /> },
-      { path: 'challenge-list', element: <Habits /> },
+      { path: 'challenges', element: <Challenges /> },
+      { path: 'challenges/:id/:type', element: <ChallengeDetail /> },
       { path: 'admin', element: <Admin /> },
       { path: 'about', element: <About /> },
       { path: 'contact', element: <Contact /> },

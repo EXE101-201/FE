@@ -50,8 +50,8 @@ export default function MainLayout() {
 
     const menuItems = [
         { key: "/confessions", label: <Link to="/confessions">Cộng đồng</Link> },
-        { key: "/challenge-list", label: <Link to="/challenge-list">Thử thách</Link> },
-        { key: "/chat", label: <Link to="/chat">Chatbot AI</Link> },
+        { key: "/challenges", label: <Link to="/challenges">Thử thách</Link> },
+        { key: "/chat", label: <Link to="/chat">Dr. MTH</Link> },
         { key: "/library", label: <Link to="/library">Thư viện</Link> },
         { key: "/premium", label: <Link to="/premium">Gói</Link> },
     ];
@@ -63,7 +63,9 @@ export default function MainLayout() {
     return (
         <Layout className="min-h-screen! bg-[#f5f5f5]">
             <Header className="sticky top-0 z-50 flex justify-between items-center px-4 md:px-8 bg-[#d9ede2]! shadow-sm border-b border-gray-100">
-                <img src="/logo.png" alt="logo" className=" h-3/4 cursor-pointer" onClick={() => navigate("/")} />
+                <Link to="/">
+                    <img src="/logo.png" alt="logo" className="h-12 cursor-pointer" />
+                </Link>
 
                 <div className="flex items-center gap-4 flex-1 justify-end">
                     <Menu
