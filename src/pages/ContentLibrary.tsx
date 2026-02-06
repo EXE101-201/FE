@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Badge, Button, Card, List, Modal, Spin } from "antd";
-import { LockOutlined, PlayCircleOutlined, ReadOutlined, SoundOutlined, HeartOutlined, StarOutlined } from "@ant-design/icons";
+import { LockOutlined, PlayCircleOutlined, ReadOutlined, SoundOutlined, HeartOutlined, StarOutlined, EyeOutlined } from "@ant-design/icons";
 import api from "../lib/api";
 import { useUser } from "../lib/hooks/hooks";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -39,6 +39,9 @@ export default function ContentLibrary() {
     };
 
     const handleAccess = (item: any) => {
+        // Increment view count
+        api.post(`/content/${item._id}/view`).catch(err => console.error("Failed to count view", err));
+
         if (item.isPremium && !isPremiumUser) {
             setIsModalOpen(true);
         } else {
@@ -60,8 +63,17 @@ export default function ContentLibrary() {
         }
     };
 
-    // Find a featured item (e.g., the first premium one or just the first one)
-    const featuredItem = articles.find(a => a.isPremium) || articles[0] || music[0];
+    // Find a featured item based on viewCount
+    const getFeaturedItem = () => {
+        const activeList = getActiveContent();
+        if (activeList.length === 0) return null;
+
+        // Sort by viewCount descending. Ensure stable sort for equal counts by relying on original order (often created date desc)
+        const sorted = [...activeList].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
+        return sorted[0];
+    };
+
+    const featuredItem = getFeaturedItem();
 
     const renderCard = (item: any) => {
         const type = item.type === 'ARTICLE' ? 'article' : (item.type === 'MUSIC' ? 'music' : 'meditation');
@@ -160,6 +172,9 @@ export default function ContentLibrary() {
                                                     Premium
                                                 </span>
                                             )}
+                                            <span className="absolute bottom-3 left-3 bg-black/50 text-white text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm flex items-center gap-1">
+                                                <EyeOutlined /> {featuredItem.viewCount || 0}
+                                            </span>
                                         </div>
 
                                         <div>

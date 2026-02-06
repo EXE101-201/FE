@@ -26,7 +26,7 @@ export default function ChallengeDetail() {
             const response = await api.get(`/challenges/${id}`);
             const data = response.data;
             setChallenge(data);
-            console.log(data);
+
             if (data) {
                 setVideos(data.contentDetail || []);
                 let currentUC = data.userProgress;
@@ -64,6 +64,8 @@ export default function ChallengeDetail() {
                     } else {
                         setTimeLeft(data.time || 900);
                     }
+                } else {
+                    setTimeLeft(data.time || 900);
                 }
             }
         } catch (error) {
