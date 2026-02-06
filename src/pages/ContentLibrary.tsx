@@ -12,7 +12,6 @@ export default function ContentLibrary() {
     const [articles, setArticles] = useState<any[]>([]);
     const [music, setMusic] = useState<any[]>([]);
     const [meditation, setMeditation] = useState<any[]>([]);
-    const [otherContent, setOtherContent] = useState<any[]>([]);
     const navigate = useNavigate();
     const location = useLocation();
     const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'articles');
@@ -135,7 +134,7 @@ export default function ContentLibrary() {
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 p-4 md:p-8">
                         {/* Left Column - Featured */}
-                        <div className="lg:col-span-3 h-fit">
+                        <div className="lg:col-span-4 h-fit">
                             <div className="bg-white rounded-3xl p-6 shadow-lg h-full border border-gray-100 relative overflow-hidden">
                                 <div className="flex items-center gap-2 mb-6 text-gray-700 font-semibold">
                                     <StarOutlined className="text-yellow-500" />
@@ -187,7 +186,7 @@ export default function ContentLibrary() {
                         </div>
 
                         {/* Right Column - Tabs & Grid */}
-                        <div className="lg:col-span-6">
+                        <div className="lg:col-span-8">
                             {/* Tabs */}
                             <div className="flex flex-wrap gap-3 mb-6">
                                 <button
@@ -223,22 +222,6 @@ export default function ContentLibrary() {
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                                 {getActiveContent().length > 0 ? (
                                     getActiveContent().map(item => renderCard(item))
-                                ) : (
-                                    <div className="col-span-full py-12 text-center text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
-                                        Không có nội dung nào trong mục này.
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                        <div className="lg:col-span-3">
-                            <button
-                                className="px-5 py-2 rounded-full text-sm font-medium bg-white text-gray-400 border border-gray-200 cursor-not-allowed hidden md:block"
-                            >
-                                Danh mục khác
-                            </button>
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                                {otherContent.length > 0 ? (
-                                    otherContent.map(item => renderCard(item))
                                 ) : (
                                     <div className="col-span-full py-12 text-center text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
                                         Không có nội dung nào trong mục này.

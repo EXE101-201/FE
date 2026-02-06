@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getChatHistory } from '../lib/api';
-import ExpressiveRobot, { type RobotExpression } from './ExpressiveRobot';
 
 export default function GlobalRobot() {
     const navigate = useNavigate();
@@ -9,29 +7,8 @@ export default function GlobalRobot() {
     const [pos, setPos] = useState({ x: 20, y: 20 });
     const [isDragging, setIsDragging] = useState(false);
     const [showBubble, setShowBubble] = useState(false);
-    const [expression, setExpression] = useState<RobotExpression>('neutral');
     const dragRef = useRef({ startX: 0, startY: 0, initialX: 0, initialY: 0 });
 
-    useEffect(() => {
-        const loadLastExpression = async () => {
-            try {
-                const history = await getChatHistory();
-                if (history && history.length > 0) {
-                    const lastMsg = history[history.length - 1];
-                    if (lastMsg.expression) {
-                        setExpression(lastMsg.expression as RobotExpression);
-                    }
-                }
-            } catch (err) {
-                console.error("Failed to sync global robot expression", err);
-            }
-        };
-
-        loadLastExpression();
-        // Set a timer to occasionally refresh or just rely on mount
-        const interval = setInterval(loadLastExpression, 30000); // Sync every 30s
-        return () => clearInterval(interval);
-    }, [location.pathname]);
 
 
     const onMouseDown = (e: React.MouseEvent) => {
