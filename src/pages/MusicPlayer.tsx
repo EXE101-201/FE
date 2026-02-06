@@ -223,7 +223,7 @@ export default function MusicPlayer() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     {/* Left/Main Content: Music Player */}
-                    <div className="lg:col-span-8 flex justify-center">
+                    <div className={`${challengeId && challenge ? 'lg:col-span-8' : 'lg:col-span-12'} flex justify-center transition-all duration-300`}>
                         <Card
                             className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-[2.5rem] overflow-hidden w-full max-w-2xl"
                             bodyStyle={{ padding: '3rem' }}

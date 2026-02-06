@@ -98,8 +98,8 @@ const Challenges: React.FC = () => {
                                 className="rounded-full bg-[#d0e5d8] border-none px-6 py-2 w-64 md:w-96 text-gray-500"
                                 style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)', textAlign: 'right' }}
                             />
-                            <div className="bg-[#a8cfb6] p-1 rounded-full shadow-sm">
-                                <img src="/Thuthach9.png" alt="bot" className="w-16 h-16 object-contain" />
+                            <div className="bg-[#a8cfb6] p-1 rounded-full shadow-sm h-12">
+                                <img src="/robot.png" alt="bot" className=" w-12 overflow-hidden object-contain" />
                             </div>
                         </div>
                     </div>
