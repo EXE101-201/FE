@@ -15,19 +15,24 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, onJoin, onUpda
     const progress = challenge.userProgress ? (challenge.userProgress.progress / challenge.duration) * 100 : 0;
     const currentDay = challenge.userProgress ? challenge.userProgress.progress : 0;
 
-    const handleHeaderClick = () => {
+    const handleHeaderClick = async () => {
         if (challenge.title.includes("Dr. MTH")) {
-            navigate('/chat');
+            navigate('/chat', { state: { challengeId: challenge._id } });
+        } else if (challenge.title.includes("Ngồi thiền 10p")) {
+            navigate('/library', { state: { activeTab: 'meditation', challengeId: challenge._id } });
+        } else if (challenge.title.includes("Thư giãn cùng âm nhạc")) {
+            navigate('/library', { state: { activeTab: 'music', challengeId: challenge._id } });
+        } else if (challenge.title.includes("Viết lại 1 ngày")) {
+            navigate('/confessions/new', { state: { challengeId: challenge._id } });
         } else {
-            navigate(`/challenges/${challenge._id}`);
+            navigate(`/challenges/${challenge._id}/${challenge.type}`);
         }
     };
 
     return (
-        <div className="bg-[#ebf1f9] rounded-[2.5rem] p-5 shadow-sm flex flex-col items-center text-center relative overflow-hidden h-64">
+        <div onClick={handleHeaderClick} className="bg-[#ebf1f9] rounded-[2.5rem] p-5 shadow-sm flex flex-col items-center text-center relative overflow-hidden h-64">
             <div
                 className="flex w-full justify-between items-start mb-2 px-1 cursor-pointer"
-                onClick={handleHeaderClick}
             >
                 <div className="text-left flex-1 pr-2">
                     <h3 className="text-[15px] font-bold text-gray-800 leading-tight mb-1">{challenge.title}</h3>

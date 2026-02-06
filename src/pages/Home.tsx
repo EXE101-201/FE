@@ -36,15 +36,7 @@ const HomePage = () => {
       </div>
 
       {/* Feature Section */}
-      <div className="flex-1 px-4 py-12 md:py-24 relative bg-[#d9ede2]">
-        {/* Floating Chat Widget Prompt (Robot at top right of feature section) */}
-        <div className="hidden md:flex absolute -top-28 items-end group cursor-pointer lg:right-0" onClick={() => navigate('/chat')}>
-          <img src="/chat-robot.png" alt="chat-robot" className="h-32 -mr-6 mb-16 relative z-20 object-contain" />
-          <div className="relative">
-            <div className="absolute inset-0 bg-white/20 blur-3xl rounded-full"></div>
-            <img src="/robot.png" alt="robot" className="w-40 h-40 md:w-56 md:h-56 relative object-contain drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-300" />
-          </div>
-        </div>
+      <div className="flex-1 px-4 py-12 md:py-24 relative bg-[#e2e7f7]">
 
         {/* Cards Grid */}
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mt-10">

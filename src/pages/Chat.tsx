@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react'
-import api, { startChat, sendChatMessage, getChatHistory, clearChatHistory, getChallenges, updateChallengeProgress } from '../lib/api';
+import { useLocation } from 'react-router-dom';
+import api, { startChat, sendChatMessage, getChatHistory, clearChatHistory, joinChallenge, updateChallengeProgress } from '../lib/api';
 import { message as antdMessage } from 'antd';
 import ExpressiveRobot, { type RobotExpression } from '../components/ExpressiveRobot';
 
@@ -16,7 +17,6 @@ export default function Chat() {
   const dragRef = useRef({ startX: 0, startY: 0, initialX: 0, initialY: 0 });
   const containerRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
-  const timerRef = useRef<any>(null)
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -56,6 +56,13 @@ export default function Chat() {
       initialY: robotPos.y
     };
   };
+  const checkChallenge = async () => {
+    const response = await api.get(`/challenges/${challengeId}`);
+    const data = response.data;
+    if (!data.userProgress) {
+      await joinChallenge(challengeId);
+    }
+  }
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -96,35 +103,10 @@ export default function Chat() {
       }
     }
     initializeChat()
-
-    // Timer for Dr. MTH challenge (10 minutes)
-    const startTimer = async () => {
-      try {
-        const challenges = await getChallenges();
-        const drMTHChallenge = challenges.find((c: any) => c.title.includes("Dr. MTH"));
-
-        if (drMTHChallenge && drMTHChallenge.userProgress && drMTHChallenge.userProgress.status !== 'COMPLETED') {
-          console.log("Dr. MTH Challenge found, starting 10m timer...");
-
-          timerRef.current = setTimeout(async () => {
-            try {
-              await updateChallengeProgress(drMTHChallenge._id);
-              antdMessage.success('Chúc mừng! Bạn đã hoàn thành 10 phút tâm sự và cập nhật thử thách!');
-            } catch (err) {
-              console.error("Auto-update progress failed", err);
-            }
-          }, 10 * 60 * 1000); // 10 minutes
-        }
-      } catch (err) {
-        console.error("Failed to check challenges for timer", err);
-      }
-    };
-
-    startTimer();
-
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+    if (challengeId) {
+      checkChallenge();
     }
+
   }, [])
 
   const handleClearHistory = async () => {
@@ -147,6 +129,10 @@ export default function Chat() {
       setIsLoading(false);
     }
   };
+
+  const location = useLocation();
+  const challengeId = location.state?.challengeId;
+  const [hasUpdatedChallenge, setHasUpdatedChallenge] = useState(false);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
@@ -175,6 +161,20 @@ export default function Chat() {
       }
       setMessages(m => [...m, reply])
       setExpression(data.expression as RobotExpression || 'happy')
+
+      // Update challenge if coming from a challenge
+      if (challengeId && !hasUpdatedChallenge) {
+        try {
+          await updateChallengeProgress(challengeId);
+          setHasUpdatedChallenge(true);
+          antdMessage.success('Chúc mừng! Bạn đã hoàn thành nhiệm vụ tâm sự hôm nay! 🎉');
+        } catch (err: any) {
+          // If already updated today, just mark as updated in local state to stop trying
+          if (err.response?.status === 400) {
+            setHasUpdatedChallenge(true);
+          }
+        }
+      }
     } catch (err: any) {
       console.error('Error sending message:', err)
       const msg = err.response?.data?.message || 'Không thể gửi tin nhắn. Vui lòng thử lại.'
@@ -349,10 +349,7 @@ export default function Chat() {
         }}
         onMouseDown={onRobotMouseDown}
       >
-        <ExpressiveRobot expression={expression} size={240} className={`${isDragging ? 'drop-shadow-3xl scale-105' : 'drop-shadow-2xl'} transition-all`} />
-        <div className="mt-2 px-4 py-1.5 bg-white/60 backdrop-blur-md rounded-full text-[12px] font-bold text-[#58856c] border border-white/40 uppercase tracking-widest shadow-lg">
-          Đang {expression === 'thinking' ? 'suy nghĩ' : (expression === 'happy' ? 'vui vẻ' : (expression === 'empathetic' ? 'lắng nghe' : (expression === 'sad' ? 'chia sẻ cùng bạn' : 'online')))}
-        </div>
+        <img src="/robot.png" alt="robot" className="w-20 h-20 md:w-28 md:h-28 object-contain mt-2" />
       </div>
     </div>
   );

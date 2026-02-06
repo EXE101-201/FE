@@ -1,126 +1,341 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Progress, message } from 'antd';
-import api from '../lib/api';
+import { ClockCircleOutlined, UserOutlined } from "@ant-design/icons";
+import { Progress, Button, Typography, App, Spin } from "antd";
+import api, { joinChallenge, updateChallengeProgress } from '../lib/api';
 
-const ChallengeDetail: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-    const [challenge, setChallenge] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+const { Title } = Typography;
+
+export default function ChallengeDetail() {
     const navigate = useNavigate();
+    const { message, modal } = App.useApp();
+    const { id, type } = useParams<{ id: string, type: string }>();
+    const [loading, setLoading] = useState(true);
+    const [challenge, setChallenge] = useState<any>(null);
+    const [userChallenge, setUserChallenge] = useState<any>(null);
+    const [timeLeft, setTimeLeft] = useState(900);
+    const [videos, setVideos] = useState([]);
+    const [hasTriggered, setHasTriggered] = useState(false);
+    const lastShownModalId = useRef<string | null>(null);
 
-    const fetchChallenge = async () => {
+
+    const fetchData = async () => {
+        if (!id) return;
         try {
+            setLoading(true);
             const response = await api.get(`/challenges/${id}`);
-            // Note: I need to implement this endpoint or use getAll and find locally
-            // For simplicity, let's assume we implement it
-            setChallenge(response.data);
-        } catch (error) {
-            console.error('Failed to fetch challenge detail:', error);
-            // Fallback: try to find it in the list of all challenges or mock data
-            try {
-                const response = await api.get('/challenges');
-                let data = response.data;
-                if (!data || data.length === 0) {
-                    data = [
-                        { _id: '1', title: "Ngủ sớm 7 ngày", description: "Nên ngủ trước 11h", duration: 7, icon: "/Thuthach.png", participants: 5, completedCount: 5, userProgress: { progress: 2, status: 'JOINED' } },
-                        { _id: '2', title: "Ngồi thiền 10p", description: "Hãy tập trung nhé!!", duration: 7, icon: "/Thuthach2.png", participants: 9, completedCount: 3, userProgress: null },
-                        { _id: '3', title: "Uống 2lít nước mỗi ngày", description: "nước rất quan trọng cho cơ thể!", duration: 7, icon: "/Thuthach3.png", participants: 15, completedCount: 2, userProgress: { progress: 5, status: 'JOINED' } },
-                        { _id: '4', title: "Tập thể dục 15p", description: "Cùng vươn vai nào", duration: 7, icon: "/Thuthach4.png", participants: 5, completedCount: 5, userProgress: { progress: 2, status: 'JOINED' } },
-                        { _id: '5', title: "Không dùng điện thoại 15 phút trước khi ngủ", description: "Ngủ dễ hơn cực nhiều.", duration: 7, icon: "/Thuthach5.png", participants: 12, completedCount: 4, userProgress: { progress: 2, status: 'JOINED' } },
-                        { _id: '6', title: "Tâm sự cùng Dr. MTH", description: "Có áp lực hãy nói với tôi!", duration: 7, icon: "/Thuthach9.png", participants: 20, completedCount: 10, userProgress: { progress: 2, status: 'JOINED' } },
-                        { _id: '7', title: "Viết lại 1 ngày của bạn thế nào?", description: "Cùng chia sẻ nào !", duration: 7, icon: "/Thuthach7.png", participants: 8, completedCount: 2, userProgress: { progress: 5, status: 'JOINED' } },
-                        { _id: '8', title: "Thư giãn cùng âm nhạc", description: "Thư giãn chút nào !", duration: 7, icon: "/Thuthach8.png", participants: 18, completedCount: 6, userProgress: { progress: 2, status: 'JOINED' } }
-                    ];
+            const data = response.data;
+            setChallenge(data);
+            console.log(data);
+            if (data) {
+                setVideos(data.contentDetail || []);
+                let currentUC = data.userProgress;
+                if (!currentUC) {
+                    currentUC = {
+                        status: 'JOINED',
+                        progress: 0,
+                        lastUpdated: null
+                    };
+                    await joinChallenge(id);
                 }
-                const found = data.find((c: any) => c._id === id);
-                if (found) setChallenge(found);
-                else message.error('Không tìm thấy thử thách');
-            } catch (err) {
-                message.error('Không tìm thấy thử thách');
+                setUserChallenge(currentUC);
+                // Check if already completed today
+                if (currentUC.lastUpdated) {
+                    const today = new Date().setHours(0, 0, 0, 0);
+                    const lastUpdated = new Date(currentUC.lastUpdated).setHours(0, 0, 0, 0);
+
+                    if (today === lastUpdated && type !== '2') {
+                        setHasTriggered(true);
+                        setTimeLeft(0);
+
+                        if (lastShownModalId.current !== id) {
+                            lastShownModalId.current = id;
+                            modal.confirm({
+                                title: <span className="text-xl font-bold text-[#2d5c40]">Bạn đã hoàn thành hôm nay!</span>,
+                                content: "Hôm nay bạn đã thực hiện thử thách này rồi. Bạn muốn quay lại trang danh sách hay ở lại xem nội dung?",
+                                centered: true,
+                                okText: 'Về trang thử thách',
+                                cancelText: 'Ở lại trang',
+                                onOk: () => navigate('/challenges'),
+                                okButtonProps: { className: '!bg-[#A8D5BA] !border-none !rounded-full' },
+                                cancelButtonProps: { className: '!border-[#A8D5BA] !text-[#2d5c40] !rounded-full' }
+                            });
+                        }
+                    } else {
+                        setTimeLeft(data.time || 900);
+                    }
+                }
             }
+        } catch (error) {
+            console.error('Failed to fetch challenge:', error);
+            message.error('Không thể tải thông tin thử thách');
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchChallenge();
+        fetchData();
+        // Reset timer and trigger when changing challenge
+        setHasTriggered(false);
     }, [id]);
 
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
+
+    // Effect to trigger update when timer hits zero
+    useEffect(() => {
+        if (timeLeft === 0 && !loading && challenge && !hasTriggered && type !== '2') {
+            setHasTriggered(true);
+            handleUpdate();
+        }
+    }, [timeLeft, loading, challenge, hasTriggered]);
+
     const handleUpdate = async () => {
+        if (!challenge || !id) return;
         try {
-            await api.put(`/challenges/${id}/progress`);
-            message.success('Cập nhật tiến độ thành công!');
-            fetchChallenge();
+            await updateChallengeProgress(id);
+            fetchData();
+            modal.confirm({
+                icon: null,
+                title: <span className="text-2xl font-bold text-[#2d5c40]">Chúc mừng!</span>,
+                content: (
+                    <div className="text-center py-4">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3112/3112946.png" alt="Success" className="w-24 h-24 mx-auto mb-4" />
+                        <p className="text-lg text-gray-600">
+                            Bạn đã hoàn thành thử thách 15 phút hôm nay! 🎉 <br />
+                            Hãy tiếp tục duy trì thói quen tốt này nhé.
+                        </p>
+                    </div>
+                ),
+                centered: true,
+                width: 500,
+                okText: 'Về trang thử thách',
+                cancelText: 'Ở lại trang',
+                okButtonProps: {
+                    className: '!bg-[#A8D5BA] !border-none !h-10 !px-6 !rounded-full !font-bold'
+                },
+                cancelButtonProps: {
+                    className: '!border-[#A8D5BA] !text-[#2d5c40] !h-10 !px-6 !rounded-full !font-bold'
+                },
+                onOk: () => {
+                    navigate('/challenges');
+                },
+            });
         } catch (error: any) {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra');
+            console.error('Update progress error:', error);
+            // Optionally show error if it's not a "already updated" error
+            if (error.response?.status !== 400) {
+                message.error('Có lỗi xảy ra khi cập nhật tiến độ');
+            }
         }
     };
 
-    if (loading) return <div className="p-8 text-center">Đang tải...</div>;
-    if (!challenge) return <div className="p-8 text-center">Không tìm thấy thử thách.</div>;
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#A8D5BA] flex items-center justify-center">
+                <Spin size="large" />
+            </div>
+        );
+    }
 
-    const isJoined = !!challenge.userProgress;
-    const progress = challenge.userProgress ? (challenge.userProgress.progress / challenge.duration) * 100 : 0;
-    const currentDay = challenge.userProgress ? challenge.userProgress.progress : 0;
+    if (!challenge) {
+        return (
+            <div className="min-h-screen bg-[#A8D5BA] flex items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold text-gray-800">Không tìm thấy thử thách</h2>
+                </div>
+            </div>
+        );
+    }
 
-    return (
-        <div className="bg-[#d9ede2] min-h-screen p-4 md:p-8">
-            <div className="max-w-4xl mx-auto bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm">
-                <Button onClick={() => navigate(-1)} className="mb-8 rounded-full border-[#a8cfb6] text-[#557c61]">
-                    &larr; Quay lại
-                </Button>
+    const isJoined = userChallenge?.status !== 'NOT_JOINED';
 
-                <div className="flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
-                    <img src={challenge.icon} alt={challenge.title} className="w-32 h-32 md:w-48 md:h-48 object-contain" />
+    // Force rendering the new layout for specific challenges or if passed as prop
+    if (type === '2' || challenge.title.includes("Ngủ sớm")) {
+        return (
+            <div className="min-h-screen bg-[#A8D5BA] p-10 font-sans relative flex flex-col items-center">
+                {/* Header */}
+                <div className="text-center mb-10 w-full">
+                    <Title level={2} className="!text-[#2d5c40] !mb-0 font-medium tracking-wide">
+                        Thử thách nhỏ - tạo thói quen "lớn"
+                    </Title>
+                </div>
 
-                    <div className="flex-1">
-                        <h1 className="text-3xl font-bold text-gray-800 mb-4">{challenge.title}</h1>
-                        <p className="text-gray-500 text-lg mb-8">{challenge.description}</p>
-
-                        <div className="bg-[#ebf1f9] rounded-3xl p-8 mb-8">
-                            <h2 className="text-xl font-bold text-[#557c61] mb-4">Tiến độ của bạn</h2>
-                            <div className="flex justify-between items-center mb-2">
-                                <span className="text-lg font-medium text-gray-600">Ngày {currentDay} / {challenge.duration}</span>
-                                <span className="text-lg font-bold text-[#557c61]">{Math.round(progress)}%</span>
+                <div className=" w-full grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    {/* Left Grid Content (2x2) */}
+                    <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-10">
+                        {challenge.contentText.map((card: any) => (
+                            <div
+                                key={card.id}
+                                style={{ backgroundColor: '#e2e7f7' }}
+                                className="rounded-3xl p-12 shadow-md flex items-center relative overflow-hidden h-full text-lg"
+                            >
+                                {card.icon && <div className="w-1/3 flex-shrink-0 z-10 flex justify-center items-center h-full">
+                                    <img src={card.icon} alt="Icon" className="w-full h-auto max-h-32 object-contain" />
+                                </div>}
+                                <div className={`pl-4 z-10 ${card.icon ? 'w-2/3' : 'w-full'}`}>
+                                    {card.title && <h4 className="text-[#58856c] mb-2">{card.title}</h4>}
+                                    {card.detail.map((text: any) => (<>
+                                        <img src={text.icon} alt="Icon" style={{ width: '1rem', height: '1rem', transform: 'translateY(-3px)', display: 'inline-block' }} />
+                                        <span key={text.id} className="text-[#58856c] leading-relaxed text-justify pl-1.5">
+                                            {text.text}
+                                        </span><br /></>
+                                    ))}
+                                </div>
                             </div>
-                            <Progress
-                                percent={progress}
-                                showInfo={false}
-                                strokeColor="#92f09b"
-                                trailColor="#c8d2df"
-                                strokeWidth={16}
-                            />
-                        </div>
+                        ))}
+                    </div>
 
-                        <div className="flex gap-4">
-                            {!isJoined ? (
-                                <Button
-                                    type="primary"
-                                    size="large"
-                                    onClick={() => api.post('/challenges/join', { challengeId: id }).then(() => fetchChallenge())}
-                                    className="rounded-full bg-[#557c61] border-none px-12 h-14 text-lg"
-                                >
-                                    Tham gia ngay
-                                </Button>
-                            ) : (
+                    {/* Right Sidebar: Challenge Progress */}
+                    <div className="lg:col-span-1">
+                        <div className="bg-white rounded-3xl p-6 shadow-xl w-full h-full flex flex-col max-h-[350px]">
+                            <div className="text-center mb-4">
+                                <h3 className="font-semibold text-gray-700">Thử thách</h3>
+                            </div>
+
+                            <div className="bg-[#E8EAF6] rounded-2xl p-6 mb-6 flex-1 flex flex-col justify-center relative overflow-hidden">
+                                <div className="flex justify-between items-start mb-4 relative z-10">
+                                    <div>
+                                        <h4 className="font-bold text-gray-800 text-xl">{challenge.title}</h4>
+                                        <p className="text-xs text-green-600 font-medium">{challenge.description}</p>
+                                    </div>
+                                    <div className="w-12 h-12">
+                                        <img src={challenge.icon || "https://cdn-icons-png.flaticon.com/512/2927/2927347.png"} alt="Sleep Icon" className="w-full h-full object-contain" />
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 relative z-10">
+                                    <div className="flex justify-between text-xs text-gray-500 mb-2">
+                                        <span>{userChallenge?.progress || 0}/{challenge.duration} ngày</span>
+                                    </div>
+                                    <Progress
+                                        percent={((userChallenge?.progress || 0) / challenge.duration) * 100}
+                                        showInfo={false}
+                                        strokeColor="#A5D6A7"
+                                        trailColor="#ffffff"
+                                        size="default"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mt-auto text-center">
                                 <Button
                                     type="primary"
                                     size="large"
                                     onClick={handleUpdate}
-                                    className="rounded-full bg-[#557c61] border-none px-12 h-14 text-lg"
-                                    disabled={challenge.userProgress.status === 'COMPLETED'}
+                                    className="!bg-[#88D3A8] !text-white !font-bold !rounded-full !px-8 !h-12 !border-none shadow-lg hover:!shadow-xl hover:!scale-105 transition-all w-full"
                                 >
-                                    {challenge.userProgress.status === 'COMPLETED' ? 'Đã hoàn thành' : 'Đã làm hôm nay'}
+                                    {isJoined ? (userChallenge.status === 'COMPLETED' ? 'Đã Hoàn Thành' : 'Điểm danh ngay') : 'Tham Gia Thử Thách'}
                                 </Button>
-                            )}
+                            </div>
                         </div>
                     </div>
+                </div>
+            </div >
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-[#A8D5BA] p-6 font-sans relative">
+            {/* Header */}
+            <div className="text-center mb-8">
+                <Title level={2} className="!text-[#2d5c40] !mb-0 font-medium tracking-wide">
+                    Thử thách nhỏ - tạo thói quen "lớn"
+                </Title>
+            </div>
+
+            {/* Robot Icon Top Right */}
+            <div className="absolute top-6 right-6 w-16 h-16 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/40 shadow-sm cursor-pointer hover:scale-105 transition-transform">
+                <img src="https://api.dicebear.com/9.x/bottts-neutral/svg?seed=robot" alt="Robot" className="w-12 h-12" />
+            </div>
+
+            <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+                    {/* Render first 2 videos */}
+                    {videos.slice(0, 2).map((video, index) => (
+                        <iframe
+                            key={index}
+                            src={video}
+                            width="100%"
+                            height="100%"
+                            className="aspect-video w-full rounded-lg shadow-md"
+                            allow="autoplay"
+                        />
+                    ))}
+
+                    {/* ITEM #3: Challenge Progress Card */}
+                    <div className="bg-white rounded-3xl p-4 shadow-xl w-full flex flex-col justify-between">
+                        <div className="text-center mb-2">
+                            <h3 className="font-semibold text-gray-700 mb-1">Thử thách</h3>
+                        </div>
+
+                        {/* Current Challenge Info */}
+                        <div className="bg-[#E6F4F1] rounded-2xl p-3 mb-3 relative overflow-hidden flex-1 flex flex-col justify-between">
+                            <div className="flex justify-between items-start mb-2 relative z-10">
+                                <div>
+                                    <h4 className="font-bold text-gray-800 text-base">{challenge.title}</h4>
+                                    <p className="text-[10px] text-gray-500">{challenge.description}</p>
+                                </div>
+                                <div className="bg-blue-100 p-1.5 rounded-full">
+                                    <UserOutlined className="text-blue-500 text-lg" />
+                                </div>
+                            </div>
+
+                            <div className="mt-2 relative z-10">
+                                <div className="flex justify-between text-[10px] text-gray-500 mb-1">
+                                    <span>{userChallenge?.progress || 0}/{challenge.duration} ngày</span>
+                                </div>
+                                <Progress
+                                    percent={((userChallenge?.progress || 0) / challenge.duration) * 100}
+                                    showInfo={false}
+                                    strokeColor="#8CDCB1"
+                                    trailColor="#ffffff"
+                                    size="small"
+                                />
+                            </div>
+
+                            {/* Decorative background shape */}
+                            <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-blue-50 rounded-full opacity-50 z-0"></div>
+                        </div>
+
+                        {/* Process Section */}
+                        <div className="text-center">
+                            <h3 className="font-semibold text-gray-700 mb-1 text-sm">Quá trình</h3>
+                            <div className="bg-gray-50 rounded-xl p-3 w-full">
+                                <div className="flex justify-between items-center mb-1 text-xs text-gray-600">
+                                    <span className="flex items-center gap-1"><ClockCircleOutlined /> Thời gian còn lại</span>
+                                    <span className="font-bold text-[#2d5c40]">{Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
+                                </div>
+                                <Progress
+                                    percent={((challenge.time - timeLeft) / challenge.time) * 100}
+                                    showInfo={false}
+                                    strokeColor="#8CDCB1"
+                                    trailColor="#E6E6FA"
+                                    size="small"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Render remaining videos (skipping the 3rd one if we want exactly 9 items total, or just continuing) */}
+                    {videos.slice(2).map((video, index) => (
+                        <iframe
+                            key={index}
+                            src={video}
+                            width="100%"
+                            height="100%"
+                            className="aspect-video w-full rounded-lg shadow-md"
+                            allow="autoplay"
+                        />
+                    ))}
                 </div>
             </div>
         </div>
     );
-};
-
-export default ChallengeDetail;
+}

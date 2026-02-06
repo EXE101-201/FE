@@ -1,7 +1,7 @@
-import { type FormEvent, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { createConfession } from '../lib/api'
-import { message } from 'antd'
+import { type FormEvent, useEffect, useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import api, { createConfession, joinChallenge, updateChallengeProgress } from '../lib/api'
+import { message, App } from 'antd'
 import { containsBadWords } from '../lib/badWords'
 
 const availableTags = ['stress', 'học_tập', 'mối_quan_hệ', 'gia_đình']
@@ -15,6 +15,23 @@ export default function NewConfession() {
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const location = useLocation()
+  const { modal } = App.useApp()
+  const challengeId = location.state?.challengeId
+
+
+  const checkChallenge = async () => {
+    const response = await api.get(`/challenges/${challengeId}`);
+    const data = response.data;
+    if (!data.userProgress) {
+      await joinChallenge(challengeId);
+    }
+  }
+  useEffect(() => {
+    if (challengeId) {
+      checkChallenge();
+    }
+  }, [])
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -41,8 +58,35 @@ export default function NewConfession() {
     setLoading(true)
     try {
       await createConfession(content.trim(), processedTags, isAnonymous)
-      message.success('Gửi confession thành công! Đang chờ duyệt.')
-      navigate('/confessions')
+
+      if (challengeId) {
+        try {
+          await updateChallengeProgress(challengeId);
+          modal.success({
+            title: <span className="text-2xl font-bold text-[#2d5c40]">Chúc mừng!</span>,
+            content: (
+              <div className="text-center py-4">
+                <img src="https://cdn-icons-png.flaticon.com/512/3112/3112946.png" alt="Success" className="w-24 h-24 mx-auto mb-4" />
+                <p className="text-lg text-gray-600">
+                  Bạn đã hoàn thành thử thách viết tâm sự hôm nay! 🎉 <br />
+                  Hãy tiếp tục chia sẻ để lòng mình nhẹ nhàng hơn nhé.
+                </p>
+              </div>
+            ),
+            centered: true,
+            width: 500,
+            okText: 'Tuyệt vời',
+            onOk: () => navigate('/confessions')
+          });
+        } catch (updateErr) {
+          console.error("Update challenge failed", updateErr);
+          message.success('Gửi confession thành công! Đang chờ duyệt.');
+          navigate('/confessions');
+        }
+      } else {
+        message.success('Gửi confession thành công! Đang chờ duyệt.')
+        navigate('/confessions')
+      }
     } catch (error) {
       message.error('Lỗi khi gửi bài viết')
     } finally {
@@ -98,8 +142,8 @@ export default function NewConfession() {
                   type="button"
                   onClick={() => toggleTag(tag)}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all transform active:scale-95 ${selectedTags.includes(tag)
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                      : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-400 hover:text-blue-600'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                    : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-400 hover:text-blue-600'
                     }`}
                 >
                   #{tag}

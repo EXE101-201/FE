@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getChatHistory } from '../lib/api';
-import ExpressiveRobot, { type RobotExpression } from './ExpressiveRobot';
 
 export default function GlobalRobot() {
     const navigate = useNavigate();
@@ -9,29 +7,8 @@ export default function GlobalRobot() {
     const [pos, setPos] = useState({ x: 20, y: 20 });
     const [isDragging, setIsDragging] = useState(false);
     const [showBubble, setShowBubble] = useState(false);
-    const [expression, setExpression] = useState<RobotExpression>('neutral');
     const dragRef = useRef({ startX: 0, startY: 0, initialX: 0, initialY: 0 });
 
-    useEffect(() => {
-        const loadLastExpression = async () => {
-            try {
-                const history = await getChatHistory();
-                if (history && history.length > 0) {
-                    const lastMsg = history[history.length - 1];
-                    if (lastMsg.expression) {
-                        setExpression(lastMsg.expression as RobotExpression);
-                    }
-                }
-            } catch (err) {
-                console.error("Failed to sync global robot expression", err);
-            }
-        };
-
-        loadLastExpression();
-        // Set a timer to occasionally refresh or just rely on mount
-        const interval = setInterval(loadLastExpression, 30000); // Sync every 30s
-        return () => clearInterval(interval);
-    }, [location.pathname]);
 
 
     const onMouseDown = (e: React.MouseEvent) => {
@@ -104,7 +81,7 @@ export default function GlobalRobot() {
                 </div>
 
                 <div className={`p-2 rounded-full bg-white/20 backdrop-blur-lg border border-white/30 shadow-2xl transition-transform ${isDragging ? 'scale-110' : 'hover:scale-105 active:scale-95'}`}>
-                    <ExpressiveRobot expression={expression} size={80} />
+                    <img src="/robot.png" alt="robot" className="w-20 h-20 md:w-28 md:h-28 object-contain mt-2" />
                 </div>
 
             </div>
@@ -116,9 +93,7 @@ export default function GlobalRobot() {
                     className="fixed bottom-5 left-5 z-[9999] bg-white/60 backdrop-blur-md p-3 rounded-full border border-[#58856c]/30 text-[#58856c] shadow-lg hover:bg-[#58856c] hover:text-white transition-all pointer-events-auto flex items-center gap-2 group animate-in fade-in slide-in-from-left-4"
                     title="Gọi Robot quay lại"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75l-2.489-2.489m0 0a3.375 3.375 0 10-4.773-4.773 3.375 3.375 0 004.774 4.774zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <img src="/robot.png" alt="robot" className="w-20 h-20 md:w-28 md:h-28 object-contain mt-2" />
                     <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap text-sm font-bold">
                         Gọi Robot quay lại
                     </span>

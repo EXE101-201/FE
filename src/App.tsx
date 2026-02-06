@@ -39,7 +39,7 @@ const router = createBrowserRouter([
       { path: 'confessions/:id', element: <ConfessionDetail /> },
       { path: 'chat', element: <Chat /> },
       { path: 'challenges', element: <Challenges /> },
-      { path: 'challenges/:id', element: <ChallengeDetail /> },
+      { path: 'challenges/:id/:type', element: <ChallengeDetail /> },
       { path: 'admin', element: <Admin /> },
       { path: 'about', element: <About /> },
       { path: 'contact', element: <Contact /> },
@@ -47,6 +47,7 @@ const router = createBrowserRouter([
       { path: 'premium', element: <PremiumUpgrade /> },
       { path: 'payment', element: <PaymentPage /> },
       { path: 'account', element: <AccountPage /> },
+      { path: 'challenge', element: <ChallengeDetail /> },
     ],
   },
   {
