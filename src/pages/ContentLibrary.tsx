@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Badge, Button, Card, List, Modal, Spin } from "antd";
+import { Badge, Button, Card, List, Modal, Spin, Pagination } from "antd";
 import { LockOutlined, PlayCircleOutlined, ReadOutlined, SoundOutlined, HeartOutlined, StarOutlined, EyeOutlined } from "@ant-design/icons";
 import api from "../lib/api";
 import { useUser } from "../lib/hooks/hooks";
@@ -16,6 +16,18 @@ export default function ContentLibrary() {
     const location = useLocation();
     const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'articles');
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeTab]);
     const challengeId = location.state?.challengeId;
 
     const isPremiumUser = user?.isPremium && new Date(user.premiumUntil).getTime() > new Date().getTime();
@@ -126,6 +138,9 @@ export default function ContentLibrary() {
         );
     };
 
+    const activeContent = getActiveContent();
+    const displayedContent = isMobile ? activeContent.slice((currentPage - 1) * 10, currentPage * 10) : activeContent;
+
     return (
         <div className="min-h-screen bg-[#EEF2F6] font-sans w-full">
             <div>
@@ -235,14 +250,29 @@ export default function ContentLibrary() {
 
                             {/* Content Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                                {getActiveContent().length > 0 ? (
-                                    getActiveContent().map(item => renderCard(item))
+                                {displayedContent.length > 0 ? (
+                                    displayedContent.map(item => renderCard(item))
                                 ) : (
                                     <div className="col-span-full py-12 text-center text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
                                         Không có nội dung nào trong mục này.
                                     </div>
                                 )}
                             </div>
+
+                            {isMobile && activeContent.length > 10 && (
+                                <div className="flex justify-center mt-8">
+                                    <Pagination
+                                        current={currentPage}
+                                        total={activeContent.length}
+                                        pageSize={10}
+                                        onChange={(page) => {
+                                            setCurrentPage(page);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                        showSizeChanger={false}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

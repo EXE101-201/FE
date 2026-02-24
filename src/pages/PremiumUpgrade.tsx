@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Card, Typography, Badge, App } from 'antd';
+import { Button, Card, Typography, App } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled, CrownFilled, RocketFilled, StarFilled, HeartFilled } from '@ant-design/icons';
 import api from '../lib/api';
 import { useNavigate } from 'react-router-dom';
@@ -128,13 +128,14 @@ const PremiumUpgrade: React.FC = () => {
     return (
         <div className="min-h-screen bg-[#a8d5ba] py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-5xl mx-auto">
-                <div className="text-center mb-16">
-                    <Badge count={<CrownFilled style={{ color: '#faad14', fontSize: '24px' }} />} offset={[10, 0]}>
-                        <Title level={1} className="!mb-4 !text-4xl sm:!text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-                            Nâng Tầm Trải Nghiệm Cùng Premium
+                <div className="text-center mb-12 relative">
+                    <div className="inline-block relative">
+                        <CrownFilled className="text-5xl md:text-6xl text-amber-400 absolute -top-8 -right-8 rotate-12 drop-shadow-lg animate-bounce" />
+                        <Title level={1} className="!mb-4 !text-2xl sm:!text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 leading-tight px-4">
+                            Nâng Tầm Trải Nghiệm <br className="md:hidden" /> Cùng Premium
                         </Title>
-                    </Badge>
-                    <Paragraph className="text-lg text-gray-600 max-w-2xl mx-auto">
+                    </div>
+                    <Paragraph className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-4 mt-2">
                         Đầu tư vào sức khỏe tinh thần là khoản đầu tư xứng đáng nhất.
                         Mở khóa toàn bộ tiềm năng của Stu.Mental Health ngay hôm nay.
                     </Paragraph>
@@ -246,9 +247,11 @@ const PremiumUpgrade: React.FC = () => {
                     )}
                 </div>
 
-                <div className="bg-white rounded-3xl shadow-lg p-8 overflow-hidden">
-                    <Title level={3} className="text-center mb-8">So sánh chi tiết</Title>
-                    <div className="overflow-x-auto">
+                <div className="bg-white rounded-3xl shadow-lg p-6 md:p-8 overflow-hidden">
+                    <Title level={3} className="text-center mb-6 md:mb-8">So sánh chi tiết</Title>
+
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b-2 border-gray-100">
@@ -270,6 +273,30 @@ const PremiumUpgrade: React.FC = () => {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden space-y-4">
+                        {features.map((f) => (
+                            <div key={f.key} className="bg-gray-50 rounded-2xl p-4 border border-gray-100 shadow-sm">
+                                <div className="flex items-center gap-3 mb-3 pb-3 border-b border-gray-100">
+                                    <div className="p-2 bg-white rounded-full shadow-sm text-xl flex items-center justify-center w-10 h-10">
+                                        {f.icon}
+                                    </div>
+                                    <span className="font-bold text-gray-800 text-lg">{f.feature}</span>
+                                </div>
+                                <div className="grid grid-cols-1 gap-3">
+                                    <div className="bg-white p-3 rounded-xl border border-gray-100 flex justify-between items-center">
+                                        <span className="text-xs text-gray-400 font-bold uppercase w-16">Free</span>
+                                        <span className="text-gray-500 text-sm font-medium text-right flex-1">{f.free}</span>
+                                    </div>
+                                    <div className="bg-indigo-50 p-3 rounded-xl border border-indigo-100 flex justify-between items-center">
+                                        <span className="text-xs text-indigo-500 font-bold uppercase w-16">Premium</span>
+                                        <span className="text-indigo-700 text-sm font-bold text-right flex-1">{f.premium}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
 

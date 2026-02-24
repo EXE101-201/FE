@@ -9,7 +9,7 @@ const HomePage = () => {
       {/* Hero Section */}
       <div className="bg-[#a8d5ba] px-4 py-8 md:py-0 md:h-[450px] flex flex-col md:flex-row items-center justify-between relative overflow-hidden">
         {/* Left Image */}
-        <div className="w-full md:w-1/3 flex justify-center md:justify-start order-2 md:order-1 mt-6 md:mt-0">
+        <div className="hidden md:flex w-full md:w-1/3 justify-center md:justify-start order-2 md:order-1 mt-6 md:mt-0">
           <img src="/home1.png" alt="home1" className="h-48 md:h-[400px] object-contain" />
         </div>
 
@@ -30,7 +30,7 @@ const HomePage = () => {
         </div>
 
         {/* Right Image */}
-        <div className="w-full md:w-1/3 flex justify-center md:justify-end order-3 md:order-3 mt-6 md:mt-0">
+        <div className="hidden md:flex w-full md:w-1/3 justify-center md:justify-end order-3 md:order-3 mt-6 md:mt-0">
           <img src="/home2.png" alt="home2" className="h-48 md:h-[400px] object-contain" />
         </div>
       </div>
