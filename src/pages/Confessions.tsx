@@ -93,15 +93,15 @@ export default function Confessions() {
         {/* 3-Column Layout */}
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Left Column: Tags */}
-          <aside className="w-full lg:w-64 flex-shrink-0 sticky top-24">
+          <aside className="w-full lg:w-64 flex-shrink-0 lg:sticky lg:top-24">
             <div className="bg-white/40 backdrop-blur-md rounded-3xl p-4 border border-white/60 shadow-sm">
               <h2 className="text-lg font-bold text-gray-800 mb-4 px-2 flex items-center gap-2">
                 <span className="text-blue-500">#</span> Chủ đề
               </h2>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 scrollbar-hide">
                 <button
                   onClick={() => setFilterTag('')}
-                  className={`px-4 py-3 rounded-2xl font-bold transition-all flex items-center gap-2 text-left shadow-sm ${!filterTag ? 'bg-[#3b82f6] text-white' : 'bg-white text-gray-800 border border-transparent'}`}
+                  className={`px-4 py-3 rounded-2xl font-bold transition-all flex items-center gap-2 text-left shadow-sm whitespace-nowrap ${!filterTag ? 'bg-[#3b82f6] text-white' : 'bg-white text-gray-800 border border-transparent'}`}
                 >
                   Tất cả confession
                 </button>
@@ -118,7 +118,7 @@ export default function Confessions() {
                     <button
                       key={tag}
                       onClick={() => setFilterTag(tag)}
-                      className={`px-4 py-3 rounded-2xl font-bold transition-all flex items-center gap-2 text-left shadow-sm ${filterTag === tag ? 'bg-[#3b82f6] text-white' : 'bg-white text-gray-800 border border-transparent hover:bg-gray-50'}`}
+                      className={`px-4 py-3 rounded-2xl font-bold transition-all flex items-center gap-2 text-left shadow-sm whitespace-nowrap ${filterTag === tag ? 'bg-[#3b82f6] text-white' : 'bg-white text-gray-800 border border-transparent hover:bg-gray-50'}`}
                     >
                       <span className="text-xl">{icons[idx % icons.length]}</span>
                       <span className="text-[14px]">{labels[tag] || tag.toLowerCase()}</span>

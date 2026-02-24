@@ -1,9 +1,10 @@
-import { Layout, Menu, Dropdown } from "antd";
+import { Layout, Menu, Dropdown, Drawer, Button } from "antd";
 import { Link, useNavigate, Outlet, useLocation } from "react-router-dom";
-import { FacebookOutlined, InstagramOutlined, YoutubeOutlined, CrownFilled } from "@ant-design/icons";
+import { FacebookOutlined, InstagramOutlined, YoutubeOutlined, CrownFilled, MenuOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { useUser } from "../lib/hooks/hooks";
 import GlobalRobot from "./GlobalRobot";
+import { useState } from "react";
 
 const { Header, Footer, Content } = Layout;
 
@@ -11,6 +12,7 @@ export default function MainLayout() {
     const { user, refreshUser } = useUser();
     const navigate = useNavigate();
     const location = useLocation();
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Determine the selected key based on the current path
     const selectedKey = "/" + location.pathname.split("/")[1];
@@ -62,22 +64,32 @@ export default function MainLayout() {
 
     return (
         <Layout className="min-h-screen! bg-[#f5f5f5]">
-            <Header className="sticky top-0 z-50 flex justify-between items-center px-4 md:px-8 bg-[#d9ede2]! shadow-sm border-b border-gray-100">
-                <Link to="/">
-                    <img src="/logo.png" alt="logo" className="h-12 cursor-pointer" />
-                </Link>
+            <Header className="sticky top-0 z-50 flex justify-between items-center px-4 md:px-8 bg-[#d9ede2]! shadow-sm border-b border-gray-100 h-16">
+                <div className="flex items-center gap-4">
+                    {/* Mobile Menu Button */}
+                    <Button
+                        type="text"
+                        icon={<MenuOutlined className="text-xl" />}
+                        className="md:hidden flex items-center justify-center"
+                        onClick={() => setMobileMenuOpen(true)}
+                    />
+                    <Link to="/" className="flex items-center">
+                        <img src="/logo.png" alt="logo" className="h-10 md:h-12 cursor-pointer" />
+                    </Link>
+                </div>
 
-                <div className="flex items-center gap-4 flex-1 justify-end">
+                {/* Desktop Menu */}
+                <div className="hidden md:flex items-center gap-4 flex-1 justify-end">
                     <Menu
                         mode="horizontal"
                         selectedKeys={[selectedKey]}
                         style={{
-                            background: "transparent", border: "none", width: "fill-content", flex: "1"
+                            background: "transparent", border: "none", width: "fill-content", flex: "1", justifyContent: "end"
                         }}
                         items={menuItems}
                     />
                     <Dropdown menu={{ items }} placement="bottomRight">
-                        <div className="relative cursor-pointer">
+                        <div className="relative cursor-pointer ml-4">
                             <img src={"/background-homePage.png"} alt="profile" className="w-10 h-10 rounded-full border-2 border-green-500" />
                             {user?.isPremium && (
                                 <CrownFilled className="absolute -top-1 -right-1 text-amber-500 text-lg" />
@@ -85,13 +97,43 @@ export default function MainLayout() {
                         </div>
                     </Dropdown>
                 </div>
+
+                {/* Mobile User Profile (only if needed outside menu, or strictly in menu) */}
+                <div className="md:hidden">
+                    <Dropdown menu={{ items }} placement="bottomRight" trigger={['click']}>
+                        <div className="relative cursor-pointer">
+                            <img src={"/background-homePage.png"} alt="profile" className="w-8 h-8 rounded-full border-2 border-green-500" />
+                            {user?.isPremium && (
+                                <CrownFilled className="absolute -top-1 -right-1 text-amber-500 text-sm" />
+                            )}
+                        </div>
+                    </Dropdown>
+                </div>
             </Header>
+
+            {/* Mobile Navigation Drawer */}
+            <Drawer
+                title="Menu"
+                placement="left"
+                onClose={() => setMobileMenuOpen(false)}
+                open={mobileMenuOpen}
+                width={280}
+                styles={{ body: { padding: 0 } }}
+            >
+                <Menu
+                    mode="inline"
+                    selectedKeys={[selectedKey]}
+                    items={menuItems}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="border-none"
+                />
+            </Drawer>
 
             <Content>
                 <Outlet />
             </Content>
 
-            <Footer className=" py-12 px-8 bg-[#d9ede2]!">
+            <Footer className="py-8 md:py-12 px-4 md:px-8 bg-[#d9ede2]!">
                 <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
                         <h3 className="text-lg font-bold mb-4 text-green-400">Stu.Mental Health</h3>
