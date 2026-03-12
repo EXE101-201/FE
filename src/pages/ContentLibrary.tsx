@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Badge, Button, Card, List, Modal, Spin, Pagination } from "antd";
+import { Badge, Button, Card, Modal, Spin, Pagination } from "antd";
 import { LockOutlined, PlayCircleOutlined, ReadOutlined, SoundOutlined, HeartOutlined, StarOutlined, EyeOutlined } from "@ant-design/icons";
 import api from "../lib/api";
 import { useUser } from "../lib/hooks/hooks";
@@ -94,52 +94,70 @@ export default function ContentLibrary() {
             ? (item.summary || (item.content?.intro?.substring(0, 60) + '...'))
             : `Thời lượng: ${item.duration}`;
 
-        return (
-            <List.Item>
-                {item.isPremium ? (
-                    <Badge.Ribbon text="Premium" color="gold">
-                        <Card
-                            hoverable
-                            onClick={() => handleAccess(item)}
-                            className={`w-full overflow-hidden ${item.isPremium && !isPremiumUser ? 'opacity-75' : ''}`}
-                            cover={item.thumbnail && <div className="h-40 overflow-hidden"><img alt={item.title} src={item.thumbnail} className="w-full h-full object-cover" /></div>}
-                        >
-                            <List.Item.Meta
-                                avatar={!item.thumbnail && <Icon className="text-2xl text-blue-500" />}
-                                title={<span className="font-semibold">{item.title}</span>}
-                                description={
-                                    <div>
-                                        {description}
-                                        {item.isPremium && !isPremiumUser && (
-                                            <div className="flex items-center text-amber-600 mt-1">
-                                                <LockOutlined className="mr-1" /> Cần nâng cấp Premium
-                                            </div>
-                                        )}
-                                    </div>
-                                }
-                            />
-                        </Card>
-                    </Badge.Ribbon>
-                ) : (
+        if (item.isPremium) {
+            return (
+                <Badge.Ribbon text="Premium" color="gold" key={item._id}>
                     <Card
                         hoverable
                         onClick={() => handleAccess(item)}
-                        className="w-full overflow-hidden"
+                        className={`w-full overflow-hidden ${!isPremiumUser ? 'opacity-80' : ''}`}
                         cover={item.thumbnail && <div className="h-40 overflow-hidden"><img alt={item.title} src={item.thumbnail} className="w-full h-full object-cover" /></div>}
                     >
-                        <List.Item.Meta
-                            avatar={!item.thumbnail && <Icon className="text-2xl text-green-500" />}
-                            title={<span className="font-semibold">{item.title}</span>}
-                            description={description}
+                        <Card.Meta
+                            avatar={!item.thumbnail && <Icon className="text-2xl text-amber-500" />}
+                            title={<span className="font-semibold text-sm text-gray-800">{item.title}</span>}
+                            description={
+                                <div className="text-xs text-gray-500">
+                                    <span className="line-clamp-2">{description}</span>
+                                    {!isPremiumUser && (
+                                        <span className="flex items-center gap-1 text-amber-600 font-medium mt-1">
+                                            <LockOutlined /> Cần nâng cấp Premium
+                                        </span>
+                                    )}
+                                </div>
+                            }
                         />
                     </Card>
-                )}
-            </List.Item>
-        );
+                </Badge.Ribbon>
+            );
+        } else {
+            return (
+                <Card
+                    key={item._id}
+                    hoverable
+                    onClick={() => handleAccess(item)}
+                    className="w-full overflow-hidden h-full"
+                    cover={item.thumbnail && <div className="h-40 overflow-hidden"><img alt={item.title} src={item.thumbnail} className="w-full h-full object-cover" /></div>}
+                >
+                    <Card.Meta
+                        avatar={!item.thumbnail && <Icon className="text-2xl text-green-500" />}
+                        title={<span className="font-semibold text-sm">{item.title}</span>}
+                        description={<span className="text-xs text-gray-500 line-clamp-2">{description}</span>}
+                    />
+                </Card>
+            );
+        }
     };
 
     const activeContent = getActiveContent();
     const displayedContent = isMobile ? activeContent.slice((currentPage - 1) * 10, currentPage * 10) : activeContent;
+
+    // Sắp xếp lại: cứ mỗi hàng 3 ô = [Premium, Premium, Free]
+    const interleaveContent = (items: any[]) => {
+        const premiums = items.filter(i => i.isPremium);
+        const frees = items.filter(i => !i.isPremium);
+        const result: any[] = [];
+        let pi = 0, fi = 0;
+        while (pi < premiums.length || fi < frees.length) {
+            // Lấy 2 premium
+            if (pi < premiums.length) result.push(premiums[pi++]);
+            if (pi < premiums.length) result.push(premiums[pi++]);
+            // Lấy 1 free
+            if (fi < frees.length) result.push(frees[fi++]);
+        }
+        return result;
+    };
+    const sortedContent = interleaveContent(displayedContent);
 
     return (
         <div className="min-h-screen bg-[#EEF2F6] font-sans w-full">
@@ -248,10 +266,10 @@ export default function ContentLibrary() {
                                 </button>
                             </div>
 
-                            {/* Content Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                                {displayedContent.length > 0 ? (
-                                    displayedContent.map(item => renderCard(item))
+                            {/* Content Grid: thứ tự = [Premium, Premium, Free] mỗi hàng */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {sortedContent.length > 0 ? (
+                                    sortedContent.map((item: any) => renderCard(item))
                                 ) : (
                                     <div className="col-span-full py-12 text-center text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
                                         Không có nội dung nào trong mục này.
