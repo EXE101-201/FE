@@ -16,7 +16,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, onJoin, onUpda
     const currentDay = challenge.userProgress ? challenge.userProgress.progress : 0;
 
     const handleHeaderClick = async () => {
-        if (challenge.title.includes("Dr. MTH")) {
+        if (challenge.title.includes("Dr.Stu")) {
             navigate('/chat', { state: { challengeId: challenge._id } });
         } else if (challenge.title.includes("Ngồi thiền 10p")) {
             navigate('/library', { state: { activeTab: 'meditation', challengeId: challenge._id } });

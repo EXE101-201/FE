@@ -48,8 +48,8 @@ export const getConfessions = async () => {
     return response.data;
 };
 
-export const createConfession = async (content: string, tags: string[], anonymous: boolean) => {
-    const response = await api.post('/confessions', { content, tags, anonymous });
+export const createConfession = async (content: string, tags: string[], anonymous: boolean, imageUrl?: string) => {
+    const response = await api.post('/confessions', { content, tags, anonymous, imageUrl });
     return response.data;
 };
 

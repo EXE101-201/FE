@@ -180,7 +180,7 @@ const PremiumUpgrade: React.FC = () => {
                         <div className="text-center p-4">
                             <Text strong className="text-indigo-600 uppercase tracking-widest">Premium Đặc Quyền</Text>
                             <div className="my-4">
-                                <span className="text-4xl font-bold text-indigo-700">99.000đ</span>
+                                <span className="text-4xl font-bold text-indigo-700">49.000đ</span>
                                 <span className="text-gray-500 ml-2">/tháng</span>
                             </div>
                             <ul className="text-left space-y-4 my-8">
@@ -207,7 +207,7 @@ const PremiumUpgrade: React.FC = () => {
                                 onClick={() => handleUpgrade('premium')}
                                 className="w-full h-12 rounded-xl text-lg mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 border-none shadow-lg hover:scale-105 transform transition-all"
                             >
-                                {isPremiumUser ? "Gia hạn thêm 1 tháng" : "Nâng cấp chỉ 99.000đ/tháng"}
+                                {isPremiumUser ? "Gia hạn thêm 1 tháng" : "Nâng cấp chỉ 49.000đ/tháng"}
                             </Button>
                             {isPremiumUser && user?.premiumUntil && (
                                 <div className="mt-4 p-2 bg-indigo-50 rounded-lg border border-indigo-100">

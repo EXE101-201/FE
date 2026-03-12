@@ -1,8 +1,9 @@
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useState, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import api, { createConfession, joinChallenge, updateChallengeProgress } from '../lib/api'
-import { message, App } from 'antd'
+import { message, App, Spin } from 'antd'
 import { containsBadWords } from '../lib/badWords'
+import { PictureOutlined, CloseCircleFilled, LoadingOutlined } from '@ant-design/icons'
 
 const availableTags = ['stress', 'học_tập', 'mối_quan_hệ', 'gia_đình']
 
@@ -14,6 +15,10 @@ export default function NewConfession() {
   const [customTags, setCustomTags] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [error, setError] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
   const location = useLocation()
   const { modal } = App.useApp()
@@ -32,6 +37,53 @@ export default function NewConfession() {
       checkChallenge();
     }
   }, [])
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      message.error('Vui lòng chọn file ảnh hợp lệ (JPG, PNG, GIF...)')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      message.error('Ảnh không được vượt quá 5MB')
+      return
+    }
+
+    setImageFile(file)
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleRemoveImage = () => {
+    setImageFile(null)
+    setImagePreview(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      setUploadingImage(true)
+      const formData = new FormData()
+      formData.append('image', file)
+      const res = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      return res.data.url || res.data.imageUrl || null
+    } catch (err) {
+      console.error('Image upload failed', err)
+      return null
+    } finally {
+      setUploadingImage(false)
+    }
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -57,7 +109,14 @@ export default function NewConfession() {
     }
     setLoading(true)
     try {
-      await createConfession(content.trim(), processedTags, isAnonymous)
+      // Upload image if exists
+      let imageUrl: string | undefined = undefined
+      if (imageFile) {
+        const uploaded = await uploadImage(imageFile)
+        if (uploaded) imageUrl = uploaded
+      }
+
+      await createConfession(content.trim(), processedTags, isAnonymous, imageUrl)
 
       if (challengeId) {
         try {
@@ -131,6 +190,58 @@ export default function NewConfession() {
             />
           </div>
 
+          {/* Image Upload Section */}
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-gray-700 ml-1">
+              Thêm ảnh <span className="text-gray-400 font-normal">(tuỳ chọn)</span>
+            </label>
+
+            {imagePreview ? (
+              <div className="relative group rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full max-h-72 object-contain"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 bg-white/90 hover:bg-white text-red-500 hover:text-red-600 rounded-full p-1 shadow-md transition-all opacity-0 group-hover:opacity-100"
+                  title="Xoá ảnh"
+                >
+                  <CloseCircleFilled className="text-xl" />
+                </button>
+                <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                  {imageFile?.name}
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50/30 transition-all group cursor-pointer"
+              >
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <PictureOutlined className="text-2xl text-blue-500" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-600 group-hover:text-blue-600 transition-colors">
+                    Nhấp để tải ảnh lên
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF tối đa 5MB</p>
+                </div>
+              </button>
+            )}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+          </div>
+
           <div className="space-y-4">
             <label className="block text-sm font-semibold text-gray-700 ml-1">
               Chọn chủ đề (Tags)
@@ -201,10 +312,12 @@ export default function NewConfession() {
               </button>
               <button
                 type="submit"
-                disabled={loading || !accepted}
-                className="flex-1 sm:flex-none px-8 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg shadow-blue-200 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none active:scale-95"
+                disabled={loading || !accepted || uploadingImage}
+                className="flex-1 sm:flex-none px-8 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg shadow-blue-200 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none active:scale-95 flex items-center gap-2 justify-center"
               >
-                {loading ? 'Đang gửi...' : 'Đăng ngay'}
+                {loading || uploadingImage ? (
+                  <><Spin indicator={<LoadingOutlined spin />} size="small" className="text-white" /> Đang gửi...</>
+                ) : 'Đăng ngay'}
               </button>
             </div>
           </div>
@@ -219,4 +332,3 @@ export default function NewConfession() {
     </div>
   )
 }
-

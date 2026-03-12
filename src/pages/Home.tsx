@@ -51,7 +51,7 @@ const HomePage = () => {
             <span className="text-[#58856c] font-semibold text-lg md:text-xl text-center">chia sẻ ẩn danh</span>
           </div>
 
-          {/* Card 2: Dr. MTH */}
+          {/* Card 2: Dr.Stu */}
           <div
             onClick={() => navigate('/chat')}
             className="bg-white rounded-[40px] p-6 md:p-8 flex flex-col items-center gap-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
@@ -59,7 +59,7 @@ const HomePage = () => {
             <div className="bg-[#dcf3e8] w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center overflow-hidden">
               <img src="/robot.png" alt="dr mth" className="w-20 h-20 md:w-28 md:h-28 object-contain mt-2" />
             </div>
-            <span className="text-[#58856c] font-semibold text-lg md:text-xl text-center">Dr. MTH</span>
+            <span className="text-[#58856c] font-semibold text-lg md:text-xl text-center">Dr.Stu</span>
           </div>
 
           {/* Card 3: Thử thách */}
