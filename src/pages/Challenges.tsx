@@ -51,7 +51,7 @@ const Challenges: React.FC = () => {
             message.success('Đã tham gia thử thách!');
             const challenge = challenges.find(c => c._id === id);
             if (challenge && challenge.title.includes("Dr.Stu")) {
-                navigate('/chat');
+                navigate('/chat', { state: { challengeId: id } });
             } else {
                 fetchChallenges();
             }
@@ -63,7 +63,7 @@ const Challenges: React.FC = () => {
     const handleUpdate = async (id: string) => {
         const challenge = challenges.find(c => c._id === id);
         if (challenge && challenge.title.includes("Dr.Stu")) {
-            navigate('/chat');
+            navigate('/chat', { state: { challengeId: id } });
             return;
         }
         try {
