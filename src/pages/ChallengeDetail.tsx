@@ -158,7 +158,109 @@ export default function ChallengeDetail() {
 
     const isJoined = userChallenge?.status !== 'NOT_JOINED';
 
-    // Force rendering the new layout for specific challenges or if passed as prop
+    // Water / Drink challenge layout
+    if (challenge.title.includes("Uống") || challenge.title.includes("nước")) {
+        return (
+            <div className="min-h-screen bg-[#A8D5BA] p-6 md:p-10 font-sans relative overflow-hidden">
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <Title level={2} className="!text-[#2d5c40] !mb-0 font-medium tracking-wide">
+                        Thử thách nhỏ - tạo thói quen "lớn"
+                    </Title>
+                </div>
+
+                {/* Top 3-column Section */}
+                <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 items-center mb-8">
+                    {/* Column 1: Speech Bubble */}
+                    <div className="flex items-center justify-center">
+                        <div className="relative bg-white rounded-2xl p-5 shadow-md text-sm text-[#2d5c40] font-medium leading-relaxed max-w-xs">
+                            ✨ Hãy tự giác hoàn thành thử thách mỗi ngày và đừng quên điểm danh để duy trì thói quen tốt cho bản thân!
+                            {/* Triangle pointing right */}
+                            <div className="absolute -right-4 top-6 w-0 h-0
+                                border-t-[10px] border-t-transparent
+                                border-b-[10px] border-b-transparent
+                                border-l-[16px] border-l-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Column 2: Center Image */}
+                    <div className="flex items-center justify-center">
+                        <img
+                            src={challenge.icon || "https://res.cloudinary.com/div6eqrog/image/upload/v1770228995/Thuthach_water.png"}
+                            alt="Water intake"
+                            className="w-full max-w-xs object-contain drop-shadow-md"
+                        />
+                    </div>
+
+                    {/* Column 3: Challenge Progress Card */}
+                    <div>
+                        <div className="bg-white rounded-3xl p-5 shadow-xl flex flex-col gap-4">
+                            <h3 className="text-center font-semibold text-gray-700 text-base">Thử thách</h3>
+
+                            <div className="bg-[#eaf4ef] rounded-2xl p-4 flex flex-col gap-3">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h4 className="font-bold text-gray-800 text-base leading-snug">{challenge.title}</h4>
+                                        <p className="text-xs text-green-600 mt-0.5 font-medium">{challenge.description}</p>
+                                    </div>
+                                    <img
+                                        src={challenge.icon}
+                                        alt="icon"
+                                        className="w-11 h-11 object-contain ml-2 flex-shrink-0"
+                                    />
+                                </div>
+                                <div>
+                                    <div className="text-xs text-gray-500 mb-1">{userChallenge?.progress || 0}/{challenge.duration} ngày</div>
+                                    <Progress
+                                        percent={((userChallenge?.progress || 0) / challenge.duration) * 100}
+                                        showInfo={false}
+                                        strokeColor="#A5D6A7"
+                                        trailColor="#ffffff"
+                                        size="default"
+                                    />
+                                </div>
+                            </div>
+
+                            <Button
+                                type="primary"
+                                size="large"
+                                onClick={handleUpdate}
+                                className="!bg-[#88D3A8] !text-white !font-bold !rounded-full !px-8 !h-12 !border-none shadow-lg hover:!shadow-xl hover:!scale-105 transition-all w-full"
+                            >
+                                {isJoined ? (userChallenge?.status === 'COMPLETED' ? 'Đã Hoàn Thành' : 'Điểm danh ngay') : 'Tham Gia Thử Thách'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bottom Benefits Section */}
+                <div className="max-w-7xl mx-auto relative">
+                    <div className="bg-[#dce8f5] rounded-3xl p-8 shadow-md text-gray-700 leading-relaxed relative overflow-hidden">
+                        <p className="font-semibold text-base mb-3">
+                            💧 Lợi ích của việc uống đủ 2L nước mỗi ngày
+                        </p>
+                        <p className="mb-3 text-sm">
+                            Nước là một phần rất quan trọng giúp cơ thể hoạt động khỏe mạnh. Khi bạn uống đủ nước mỗi ngày, cơ thể sẽ được cung cấp đủ năng lượng để học tập, làm việc và duy trì trạng thái tinh thần tốt hơn.
+                        </p>
+                        <p className="mb-3 text-sm">
+                            Đối với sinh viên và người thường xuyên học tập, uống đủ nước giúp giảm cảm giác mệt mỏi, tăng khả năng tập trung và giúp não bộ hoạt động hiệu quả hơn. Ngoài ra, nước còn hỗ trợ quá trình trao đổi chất, giúp cơ thể đào thải các chất không cần thiết và giữ cho làn da khỏe mạnh hơn.
+                        </p>
+                        <p className="text-sm">
+                            Duy trì thói quen uống đủ 2L nước mỗi ngày tuy là một hành động nhỏ, nhưng nếu thực hiện đều đặn, nó sẽ tạo nên một thói quen tốt cho sức khỏe lâu dài. Những thay đổi tích cực bắt đầu từ những việc đơn giản như vậy.
+                        </p>
+
+                        {/* Decorative robot bottom right */}
+                        <div className="absolute -bottom-3 right-6 w-20 h-20 pointer-events-none select-none">
+                            <img src="/robot.png" alt="robot" className="w-full h-full object-contain drop-shadow-md" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Sleep / other special challenges layout
     if (type === '2' || challenge.title.includes("Ngủ sớm")) {
         return (
             <div className="min-h-screen bg-[#A8D5BA] p-10 font-sans relative flex flex-col items-center">
