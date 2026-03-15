@@ -5,44 +5,51 @@ import api from "../lib/api";
 import { useUser } from "../lib/hooks/hooks";
 import { useNavigate, useLocation } from "react-router-dom";
 
+const PAGE_SIZE = 6;
 
 export default function ContentLibrary() {
     const { user } = useUser();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [articles, setArticles] = useState<any[]>([]);
-    const [music, setMusic] = useState<any[]>([]);
-    const [meditation, setMeditation] = useState<any[]>([]);
+    const [content, setContent] = useState<any[]>([]);
+    const [total, setTotal] = useState(0);
+    const [featuredItem, setFeaturedItem] = useState<any>(null);
     const navigate = useNavigate();
     const location = useLocation();
     const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'articles');
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [activeTab]);
     const challengeId = location.state?.challengeId;
 
     const isPremiumUser = user?.isPremium && new Date(user.premiumUntil).getTime() > new Date().getTime();
 
-    useEffect(() => {
-        fetchContent();
-    }, []);
+    const tabTypeMap: Record<string, string> = {
+        articles: 'ARTICLE',
+        music: 'MUSIC',
+        meditation: 'MEDITATION',
+    };
 
-    const fetchContent = async () => {
+    // Reset trang khi chuyển tab
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeTab]);
+
+    // Fetch nội dung phân trang khi tab hoặc trang thay đổi
+    useEffect(() => {
+        fetchContent(currentPage);
+    }, [activeTab, currentPage]);
+
+    // Fetch featured item (top viewCount) — chỉ gọi 1 lần khi tab thay đổi
+    useEffect(() => {
+        fetchFeatured();
+    }, [activeTab]);
+
+    const fetchContent = async (page: number) => {
         try {
             setLoading(true);
-            const contentRes = await api.get('/content');
-            setArticles(contentRes.data.filter((item: any) => item.type === 'ARTICLE'));
-            setMusic(contentRes.data.filter((item: any) => item.type === 'MUSIC'));
-            setMeditation(contentRes.data.filter((item: any) => item.type === 'MEDITATION'));
+            const type = tabTypeMap[activeTab];
+            const res = await api.get('/content', { params: { type, page, limit: PAGE_SIZE } });
+            setContent(res.data.data);
+            setTotal(res.data.total);
         } catch (error) {
             console.error("Failed to fetch content", error);
         } finally {
@@ -50,10 +57,23 @@ export default function ContentLibrary() {
         }
     };
 
-    const handleAccess = (item: any) => {
-        // Increment view count
-        api.post(`/content/${item._id}/view`).catch(err => console.error("Failed to count view", err));
+    const fetchFeatured = async () => {
+        try {
+            const type = tabTypeMap[activeTab];
+            // Lấy top 1 item viewCount cao nhất (sort phía server, limit=1)
+            // Vì BE sort theo createdAt, ta lấy page=1 limit=50 rồi tìm max viewCount phía FE
+            const res = await api.get('/content', { params: { type, page: 1, limit: 50 } });
+            const all: any[] = res.data.data || [];
+            if (all.length === 0) { setFeaturedItem(null); return; }
+            const top = [...all].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))[0];
+            setFeaturedItem(top);
+        } catch {
+            setFeaturedItem(null);
+        }
+    };
 
+    const handleAccess = (item: any) => {
+        api.post(`/content/${item._id}/view`).catch(err => console.error("Failed to count view", err));
         if (item.isPremium && !isPremiumUser) {
             setIsModalOpen(true);
         } else {
@@ -65,27 +85,10 @@ export default function ContentLibrary() {
         }
     };
 
-    // Helper to get displayed content based on tab
-    const getActiveContent = () => {
-        switch (activeTab) {
-            case 'articles': return articles;
-            case 'music': return music;
-            case 'meditation': return meditation;
-            default: return [];
-        }
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-
-    // Find a featured item based on viewCount
-    const getFeaturedItem = () => {
-        const activeList = getActiveContent();
-        if (activeList.length === 0) return null;
-
-        // Sort by viewCount descending. Ensure stable sort for equal counts by relying on original order (often created date desc)
-        const sorted = [...activeList].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
-        return sorted[0];
-    };
-
-    const featuredItem = getFeaturedItem();
 
     const renderCard = (item: any) => {
         const type = item.type === 'ARTICLE' ? 'article' : (item.type === 'MUSIC' ? 'music' : 'meditation');
@@ -138,26 +141,6 @@ export default function ContentLibrary() {
             );
         }
     };
-
-    const activeContent = getActiveContent();
-    const displayedContent = isMobile ? activeContent.slice((currentPage - 1) * 10, currentPage * 10) : activeContent;
-
-    // Sắp xếp lại: cứ mỗi hàng 3 ô = [Premium, Premium, Free]
-    const interleaveContent = (items: any[]) => {
-        const premiums = items.filter(i => i.isPremium);
-        const frees = items.filter(i => !i.isPremium);
-        const result: any[] = [];
-        let pi = 0, fi = 0;
-        while (pi < premiums.length || fi < frees.length) {
-            // Lấy 2 premium
-            if (pi < premiums.length) result.push(premiums[pi++]);
-            if (pi < premiums.length) result.push(premiums[pi++]);
-            // Lấy 1 free
-            if (fi < frees.length) result.push(frees[fi++]);
-        }
-        return result;
-    };
-    const sortedContent = interleaveContent(displayedContent);
 
     return (
         <div className="min-h-screen bg-[#EEF2F6] font-sans w-full">
@@ -266,10 +249,10 @@ export default function ContentLibrary() {
                                 </button>
                             </div>
 
-                            {/* Content Grid: thứ tự = [Premium, Premium, Free] mỗi hàng */}
+                            {/* Content Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {sortedContent.length > 0 ? (
-                                    sortedContent.map((item: any) => renderCard(item))
+                                {content.length > 0 ? (
+                                    content.map((item: any) => renderCard(item))
                                 ) : (
                                     <div className="col-span-full py-12 text-center text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
                                         Không có nội dung nào trong mục này.
@@ -277,16 +260,14 @@ export default function ContentLibrary() {
                                 )}
                             </div>
 
-                            {isMobile && activeContent.length > 10 && (
+                            {/* Pagination */}
+                            {total > PAGE_SIZE && (
                                 <div className="flex justify-center mt-8">
                                     <Pagination
                                         current={currentPage}
-                                        total={activeContent.length}
-                                        pageSize={10}
-                                        onChange={(page) => {
-                                            setCurrentPage(page);
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }}
+                                        total={total}
+                                        pageSize={PAGE_SIZE}
+                                        onChange={handlePageChange}
                                         showSizeChanger={false}
                                     />
                                 </div>

@@ -24,7 +24,7 @@ const PaymentPage: React.FC = () => {
         bankName: 'MBBank',
         accountNumber: 'VQRQAGQXR1752',
         accountName: 'STU MENTAL HEALTH',
-        amount: 99000,
+        amount: 49000,
         description: `dh ${orderId || 'unknown'}`,
     };
 
