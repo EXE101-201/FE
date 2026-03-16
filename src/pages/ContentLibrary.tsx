@@ -48,8 +48,8 @@ export default function ContentLibrary() {
             setLoading(true);
             const type = tabTypeMap[activeTab];
             const res = await api.get('/content', { params: { type, page, limit: PAGE_SIZE } });
-            setContent(res.data.data);
-            setTotal(res.data.total);
+            setContent(res.data?.data || []);
+            setTotal(res.data?.total || 0);
         } catch (error) {
             console.error("Failed to fetch content", error);
         } finally {
@@ -63,7 +63,7 @@ export default function ContentLibrary() {
             // Lấy top 1 item viewCount cao nhất (sort phía server, limit=1)
             // Vì BE sort theo createdAt, ta lấy page=1 limit=50 rồi tìm max viewCount phía FE
             const res = await api.get('/content', { params: { type, page: 1, limit: 50 } });
-            const all: any[] = res.data.data || [];
+            const all: any[] = res.data?.data || [];
             if (all.length === 0) { setFeaturedItem(null); return; }
             const top = [...all].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))[0];
             setFeaturedItem(top);
