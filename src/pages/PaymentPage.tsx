@@ -25,7 +25,7 @@ const PaymentPage: React.FC = () => {
         accountNumber: 'VQRQAGQXR1752',
         accountName: 'STU MENTAL HEALTH',
         amount: 49000,
-        description: `dh ${orderId || 'unknown'}`,
+        description: `${user?.fullName} - stumentalhealth`,
     };
 
     const qrUrl = `https://qr.sepay.vn/img?acc=${BANK_INFO.accountNumber}&bank=${BANK_INFO.bankName}&amount=${BANK_INFO.amount}&des=${BANK_INFO.description}`;
